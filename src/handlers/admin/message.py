@@ -1,56 +1,68 @@
 
 import html
 
-from aiogram import Router, F
+from aiogram import Router
 from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
 from ...filters.check_admin import IsAdmin
-
 from ...crud.card_back import update_card_back, get_card_back
-from ...keyboards.admin import get_admin_keyboard
-
+from ...keyboards.admin import get_admin_keyboard, get_cancel_keyboard
+from .callback import AdminStates
 
 router = Router()
 
 
 async def admin_handler(message: Message):
-    await message.answer(f'Welcome to admin menu, {html.escape(message.from_user.full_name)}',
-
-                         reply_markup=get_admin_keyboard()
+    """Вход в админ меню по команде /admin"""
+    await message.answer(
+        f'Welcome to admin menu, {html.escape(message.from_user.full_name)}',
+        reply_markup=get_admin_keyboard()
                          )
+# ==================== Message handlers для FSM состояний ====================
 
-async def get_photo_id(message: Message):
-    """Получить file_id картинки"""
-    if message.photo:
-        file_id = message.photo[-1].file_id
-        await message.answer(f"✅ file_id:\n\n<code>{file_id}</code>", parse_mode="HTML")
-    else:
-        await message.answer("Сначала отправьте фото, затем нажмите кнопку.")
+@router.message(AdminStates.waiting_for_photo, IsAdmin())
+async def handle_photo_for_file_id(message: Message, state: FSMContext):
+    """Обработка фото для получения file_id"""
+    if not message.photo:
+        await message.answer(
+            "❌ Пожалуйста, отправьте фото",
+            reply_markup=get_cancel_keyboard()
+        )
+        return
 
-async def save_card_back(message: Message):
-    """Сохранить рубашку карт"""
-    if message.photo:
-        file_id = message.photo[-1].file_id
-        await update_card_back(file_id)
-        await message.answer("✅ Рубашка сохранена!")
-    else:
-        await message.answer("Сначала отправьте фото, затем нажмите кнопку.")
+    file_id = message.photo[-1].file_id
+    await state.clear()
+    await message.answer(
+        f"✅ file_id:\n\n<code>{file_id}</code>",
+        parse_mode="HTML",
+        reply_markup=get_admin_keyboard()
+    )
 
-async def view_card_back(message: Message):
-    """Посмотреть текущую рубашку"""
-    file_id = await get_card_back()
-    if file_id:
-        await message.answer_photo(file_id, caption="🃏 Текущая рубашка карт.")
-    else:
-        await message.answer("Рубашка не установлена.")
 
+@router.message(AdminStates.waiting_for_save_back, IsAdmin())
+async def handle_photo_for_save_back(message: Message, state: FSMContext):
+    """Обработка фото для сохранения рубашки"""
+    if not message.photo:
+        await message.answer(
+            "❌ Пожалуйста, отправьте фото",
+            reply_markup=get_cancel_keyboard()
+        )
+        return
+
+    file_id = message.photo[-1].file_id
+    await update_card_back(file_id)
+    await state.clear()
+    await message.answer(
+        "✅ Рубашка сохранена!",
+        reply_markup=get_admin_keyboard()
+    )
 
 
 def register_handlers():
-    router.message.register(get_photo_id, F.text == "📸 Получить file_id", IsAdmin())
-    router.message.register(save_card_back, F.text == "🃏 Сохранить рубашку", IsAdmin())
-    router.message.register(view_card_back, F.text == "👁️ Посмотреть рубашку", IsAdmin())
+    """Регистрируем обработчики сообщений админа"""
     router.message.register(admin_handler, Command('admin'), IsAdmin())
+
 
 

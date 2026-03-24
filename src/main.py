@@ -7,6 +7,7 @@ from os import environ
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.fsm.storage.memory import MemoryStorage
 
 from filters.chat_type import ChatTypeFilter
 from middlewares.logger import LoggerMiddleware
@@ -35,7 +36,9 @@ async def main():
     await init_cards_table()
     await init_card_back()
 
-    dp = Dispatcher(config=config, bot_info=bot_info, db=db)
+    storage = MemoryStorage()  # для продакшена можно заменить на RedisStorage
+    dp = Dispatcher(storage=storage, config=config, bot_info=bot_info, db=db)
+
     dp.include_routers(router)
 
     dp.update.outer_middleware(LoggerMiddleware())
