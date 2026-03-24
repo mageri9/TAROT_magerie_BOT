@@ -1,5 +1,5 @@
 import aiosqlite
-
+import asyncpg
 from ..core.config import Settings
 
 
@@ -8,10 +8,12 @@ class DBConnect:
         self.db_url = db_url
         self.connection: aiosqlite.Connection = None
         self.cursor: aiosqlite.Cursor = None
+        self.pool = None
 
     async def connect(self):
         self.connection = await aiosqlite.connect(self.db_url)
         self.cursor = await self.connection.cursor()
+
 
     async def close(self):
         await self.cursor.close()

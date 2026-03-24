@@ -57,7 +57,7 @@ async def view_card_back_start(callback: CallbackQuery, state: FSMContext):
             "❌ Рубашка не установлена.",
             reply_markup=get_admin_keyboard()
         )
-        await callback.answer()
+    await callback.answer()
 
 @router.callback_query(F.data == "admin:cancel", IsAdmin())
 async def cancel_action(callback: CallbackQuery, state: FSMContext):
@@ -67,6 +67,24 @@ async def cancel_action(callback: CallbackQuery, state: FSMContext):
         "❌ Действие отменено",
         reply_markup=get_admin_keyboard()
     )
+    await callback.answer()
+
+
+@router.callback_query(F.data == "admin:exit", IsAdmin())
+async def exit_admin_panel(callback: CallbackQuery, state: FSMContext):
+    """Выход из админ-панели"""
+    await state.clear()  # очищаем состояние FSM
+
+    # Удаляем сообщение с админ-меню
+    await callback.message.delete()
+
+    # Отправляем новое сообщение о выходе
+    await callback.message.answer(
+        "👋 Вы вышли из админ-панели\n"
+        "Для входа используйте /admin"
+    )
+
+    # Закрываем callback
     await callback.answer()
 
 def register_handlers():

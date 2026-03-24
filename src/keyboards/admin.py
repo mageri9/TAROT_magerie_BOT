@@ -12,7 +12,7 @@ def get_admin_keyboard() -> InlineKeyboardMarkup:
             InlineKeyboardButton(text="👁️ Посмотреть рубашку", callback_data="admin:view_card_back")
         ],
         [
-            InlineKeyboardButton(text="❌ Отмена", callback_data="admin:cancel")
+            InlineKeyboardButton(text="🚪 Выйти из админ-панели", callback_data="admin:exit")
         ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
