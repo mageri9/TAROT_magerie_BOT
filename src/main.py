@@ -15,6 +15,7 @@ from core.router_manager import setup_routers
 from core.config import Settings
 from src.core.db import db
 from src.crud.card import init_cards_table
+from src.crud.card_back import init_card_back
 
 async def main():
     logger.add(sys.stderr, format="{time} {level} {message}", filter="template", level="INFO")
@@ -32,6 +33,7 @@ async def main():
 
     # Инициализируем таблицу для карт
     await init_cards_table()
+    await init_card_back()
 
     dp = Dispatcher(config=config, bot_info=bot_info, db=db)
     dp.include_routers(router)

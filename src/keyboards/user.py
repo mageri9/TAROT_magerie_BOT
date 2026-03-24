@@ -1,10 +1,10 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 
-start_menu = ReplyKeyboardMarkup(
+card = ReplyKeyboardMarkup(
     resize_keyboard=True,
     keyboard=[
         [
-            KeyboardButton(text='КАРТА ДНЯ')
+            KeyboardButton(text='🔮 КАРТА ДНЯ 🔮')
          ]
     ])
 

@@ -7,6 +7,7 @@ from aiogram.types import Message
 import src.services as repo
 import src.keyboards.user as kb
 from src.crud.card import can_get_card, save_card_requests
+from src.crud.card_back import get_card_back
 
 router = Router()
 
@@ -14,19 +15,21 @@ router = Router()
 async def start_handler(message: Message):
     await repo.create_user(user_id=message.from_user.id)
     await message.answer(f'<b>{html.escape(message.from_user.full_name)}</b>, добро пожаловать!',
-                         reply_markup=kb.start_menu)
+                         reply_markup=kb.card)
 
     #Обработка сообщения "карта дня"
 async def card_of_day(message: types.Message):
     user_id = message.from_user.id
 
+    print("Заглушка на хэндлер.юзер.месседж")
     #Проверяем, можно ли получить карту
-    if not await can_get_card(user_id):
-        await message.answer("Вы уже получали карту сегодня.")
-        return
+#    if not await can_get_card(user_id):
+#        await message.answer("Вы уже получали карту сегодня.")
+#        return
 
     # Тут логика получения карты
-    await message.answer("🎴 Вот ваша карта дня...")
+    card_back = await get_card_back()
+    await message.answer_photo(card_back)
 
     #Сохраняем, что пользователь получил карту
     await save_card_requests(user_id)
