@@ -21,14 +21,14 @@ async def start_handler(message: Message):
         f'<b>{html.escape(message.from_user.full_name)}</b>, добро пожаловать!',
         reply_markup=card_of_the_day()
                         )
-    await message.answer_photo("AgACAgIAAxkDAAIBcmnD_OJrZT4CS-F4jVffIpMX69qaAAIrE2sbVbghSg6_9bNqDP3bAQADAgADeAADOgQ")
+
 
 @router.message(F.text == '🔮 КАРТА ДНЯ 🔮')
 async def card_of_day(message: types.Message):
     """Обработчик кнопки '🔮 КАРТА ДНЯ 🔮'"""
     user_id = message.from_user.id
 
-    card_back = await srv.give_daily_card(user_id)
+    card_id, card_back = await srv.give_daily_card(user_id)
 
     if not card_back:
         await message.answer("Вы уже получали карту сегодня.")
@@ -36,8 +36,8 @@ async def card_of_day(message: types.Message):
 
     await message.answer_photo(
         card_back,
-        caption="Пока не открыли карту, введите что-нибудь. В будущем это на что-то повлияет",
-        reply_markup=open_card_button()
+        caption="🔮 Пока не открыли карту, введите что-нибудь. В будущем это на что-то повлияет",
+        reply_markup=open_card_button(card_id)
                                 )
 
 def register_handlers():

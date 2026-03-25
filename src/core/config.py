@@ -18,6 +18,6 @@ class Settings(BaseSettings):
 
     def get_db_url(self) -> str:
         db_path = Path(__file__).resolve().parent.parent / "database" / "db.db"
-        return db_path
+        return str(db_path)
 
 settings = Settings()

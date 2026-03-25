@@ -3,20 +3,30 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 
 def card_of_the_day():
     card = [
-                [
-                KeyboardButton(text='🔮 КАРТА ДНЯ 🔮')
-                ]
-            ]
+                [KeyboardButton(text='🔮 КАРТА ДНЯ 🔮')]
+           ]
     return ReplyKeyboardMarkup(keyboard=card, resize_keyboard=True)
 
 
-def reroll_and_share():
-    pass
+def open_card_actions_keyboard(card_id: int) -> InlineKeyboardMarkup:
+    """Клавиатура после открытия карты"""
+    buttons = [
+        [InlineKeyboardButton(text="🔄 Другая карта", callback_data=f"reroll:{card_id}")],
+        [InlineKeyboardButton(text="📤 Поделиться", callback_data="share")]
+              ]
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
 
-def open_card_button() -> InlineKeyboardMarkup:
+def open_card_button(card_id: int = None) -> InlineKeyboardMarkup:
+    """Кнопка открытия карты (для рубашки)"""
+    if card_id is not None:
+        callback_data = f"open_card:{card_id}"
+    else:
+        callback_data = "open_card"
+
     open_button = [
-        [InlineKeyboardButton(text="Открыть",  callback_data="open_card")]
-    ]
-
+        [InlineKeyboardButton(text="🔮 Открыть", callback_data=callback_data)]
+                  ]
     return InlineKeyboardMarkup(inline_keyboard=open_button)
+
+
 
