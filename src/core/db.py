@@ -1,5 +1,5 @@
 import aiosqlite
-import asyncpg
+
 from ..core.config import Settings
 
 

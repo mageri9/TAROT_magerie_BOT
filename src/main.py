@@ -11,12 +11,13 @@ from aiogram.fsm.storage.memory import MemoryStorage
 
 from filters.chat_type import ChatTypeFilter
 from middlewares.logger import LoggerMiddleware
-from core.router_manager import setup_routers
 
+from core.router_manager import setup_routers
 from core.config import Settings
 from src.core.db import db
-from src.crud.card import init_cards_table
-from src.crud.card_back import init_card_back
+
+from src.database.init import init_all_tables
+
 
 async def main():
     logger.add(sys.stderr, format="{time} {level} {message}", filter="template", level="INFO")
@@ -32,9 +33,8 @@ async def main():
 
     await db.connect()
 
-    # Инициализируем таблицу для карт
-    await init_cards_table()
-    await init_card_back()
+    # Инициализируем таблицы
+    await init_all_tables()
 
     storage = MemoryStorage()  # для продакшена можно заменить на RedisStorage
     dp = Dispatcher(storage=storage, config=config, bot_info=bot_info, db=db)

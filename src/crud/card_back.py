@@ -1,20 +1,19 @@
 from ..core.db import db
 
-async def init_card_back():
+async def init_card_back_table():
     """Создает таблицу для хранения рубашки карт"""
     await db.execute('''
-    CREATE TABLE IF NOT EXISTS card_back (
-    id INTEGER PRIMARY KEY CHECK (id = 1),
-    file_id TEXT NOT NULL
-        )
+                        CREATE TABLE IF NOT EXISTS card_back (
+                        id INTEGER PRIMARY KEY CHECK (id = 1),
+                        file_id TEXT NOT NULL
+                                                            )
                      ''')
-
-    #Проверяем, есть ли запись
+    #Проверка
     result = await db.fetchone('SELECT id FROM card_back WHERE id = 1')
     if not result:
         await db.execute('''
-        INSERT INTO card_back (id, file_id)
-        VALUES (1, '')
+                        INSERT INTO card_back (id, file_id)
+                        VALUES (1, '')
                          ''')
 
 async def get_card_back() -> str:
