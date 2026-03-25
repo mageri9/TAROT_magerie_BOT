@@ -21,6 +21,7 @@ async def start_handler(message: Message):
         f'<b>{html.escape(message.from_user.full_name)}</b>, добро пожаловать!',
         reply_markup=card_of_the_day()
                         )
+    await message.answer_photo("AgACAgIAAxkDAAIBcmnD_OJrZT4CS-F4jVffIpMX69qaAAIrE2sbVbghSg6_9bNqDP3bAQADAgADeAADOgQ")
 
 @router.message(F.text == '🔮 КАРТА ДНЯ 🔮')
 async def card_of_day(message: types.Message):
