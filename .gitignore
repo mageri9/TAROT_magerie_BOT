@@ -1,11 +1,19 @@
+# Virtual Environment
 venv/
-*.env
+env/
+.env
+.env.*
 
+# Database
+database/*.db
+database/*.sqlite
+*.db
+*.sqlite
 
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-
 *.egg-info/
 *.egg
 dist/
@@ -13,28 +21,47 @@ build/
 *.so
 *.exe
 
+# Logs & Temp
 *.log
 *.tmp
 *.bak
 *.swp
 *~
 
+# IDE
 .idea/
 .vscode/
 *.code-workspace
-.DS_Store (Mac)
+.DS_Store
 
+# Jupyter
 .ipynb_checkpoints/
 
+# Testing
 .coverage
 htmlcov/
 .pytest_cache/
 prof/
 
+# Config
 *.cfg
 *.ini
 *.local
 
+# Package Manager
 pip-log.txt
 Pipfile.lock
 poetry.lock
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+
+tarot_images/
+tarot-images.json
+
+
+database/
+!database/README.md  # если хочешь оставить пояснение
