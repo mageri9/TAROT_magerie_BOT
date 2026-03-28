@@ -30,7 +30,10 @@ async def get_random_card():
 async def get_card_by_id(card_id: int):
     """Получить карту по ID"""
     return await db.fetchone('''
-        SELECT id, name, file_id FROM tarot_cards WHERE id = ?
+        SELECT id, name, file_id,
+        meaning_direct, meaning_reversed,
+        detailed_direct, detailed_reversed
+        FROM tarot_cards WHERE id = ?
     ''', (card_id,))
 
 async def get_total_cards_count() -> int:
