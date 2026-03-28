@@ -31,10 +31,11 @@ htmlcov/
 .pytest_cache/
 prof/
 
+*.db
 *.cfg
 *.ini
 *.local
 
 pip-log.txt
 Pipfile.lock
-poetry.lock
+poetry.lock*.db
