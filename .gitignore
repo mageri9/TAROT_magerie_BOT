@@ -43,6 +43,7 @@ htmlcov/
 .pytest_cache/
 prof/
 
+
 # Config
 *.cfg
 *.ini
@@ -51,6 +52,7 @@ prof/
 # Package Manager
 pip-log.txt
 Pipfile.lock
+
 poetry.lock
 
 # Secrets
@@ -65,3 +67,6 @@ tarot-images.json
 
 database/
 !database/README.md
+=======
+poetry.lock*.db
+

@@ -91,10 +91,6 @@ async def reroll_card(callback: CallbackQuery):
     await callback.answer(f" {card_name}!")
 
 
-
-
-
-
 @router.callback_query(F.data == "cancel")
 async def cancel_handler(query: CallbackQuery):
     await query.message.edit_text('Operation canceled')
