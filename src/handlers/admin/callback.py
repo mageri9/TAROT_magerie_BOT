@@ -1,14 +1,13 @@
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery
+
+
 
 from ...filters.check_admin import IsAdmin
-
-from ...crud.card_back import get_card_back
-
-from ...keyboards.admin import get_admin_keyboard, get_cancel_keyboard
-
+from ...crud.card_back import get_all_card_backs, delete_card_back
+from ...keyboards.admin import get_admin_keyboard, get_cancel_keyboard, get_delete_back_keyboard
 
 router = Router()
 
@@ -43,20 +42,31 @@ async def save_card_back_start(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 @router.callback_query(F.data == "admin:view_card_back", IsAdmin())
-async def view_card_back_start(callback: CallbackQuery, state: FSMContext):
-    """Просмотр текущей рубашки"""
-    file_id = await get_card_back()
-    if file_id:
+async def view_card_backs(callback: CallbackQuery):
+    """Показать все рубашки"""
+    backs = await get_all_card_backs()
+
+    if not backs:
+        await callback.message.answer("❌ Рубашек пока нет")
+        await callback.answer()
+        return
+
+    for back in backs:
         await callback.message.answer_photo(
-            file_id,
-            caption="🃏 Текущая рубашка карт.",
-            reply_markup=get_admin_keyboard()
+            back[1],
+            caption=f"🃏 Рубашка ID: {back[0]}",
+            reply_markup=get_delete_back_keyboard(back[0])
         )
-    else:
-        await callback.message.answer(
-            "❌ Рубашка не установлена.",
-            reply_markup=get_admin_keyboard()
-        )
+
+    await callback.answer()
+
+
+@router.callback_query(F.data.startswith("admin:del_back:"), IsAdmin())
+async def del_back(callback: CallbackQuery):
+    """Удалить рубашку"""
+    back_id = int(callback.data.split(":")[2])
+    await delete_card_back(back_id)
+    await callback.message.edit_caption(caption="✅ Рубашка удалена")
     await callback.answer()
 
 @router.callback_query(F.data == "admin:cancel", IsAdmin())

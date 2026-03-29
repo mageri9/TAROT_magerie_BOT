@@ -6,14 +6,11 @@ def get_admin_keyboard() -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(text="📸 Получить file_id", callback_data="admin:get_file_id"),
-            InlineKeyboardButton(text="🃏 Сохранить рубашку", callback_data="admin:save_card_back")
+            InlineKeyboardButton(text="🃏 Добавить рубашку", callback_data="admin:save_card_back")
         ],
-        [
-            InlineKeyboardButton(text="👁️ Посмотреть рубашку", callback_data="admin:view_card_back")
-        ],
-        [
-            InlineKeyboardButton(text="🚪 Выйти из админ-панели", callback_data="admin:exit")
-        ]
+            [InlineKeyboardButton(text="👁️ Посмотреть рубашки", callback_data="admin:view_card_back")]
+        ,
+            [InlineKeyboardButton(text="🚪 Выйти.", callback_data="admin:exit")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
@@ -23,4 +20,15 @@ def get_cancel_keyboard() -> InlineKeyboardMarkup:
         inline_keyboard=[
         [InlineKeyboardButton(text="❌ Отмена", callback_data="admin:cancel")]
             ]
+    )
+
+def get_delete_back_keyboard(back_id: int) -> InlineKeyboardMarkup:
+    """Клавиатура с кнопкой удаления для рубашки"""
+    return InlineKeyboardMarkup(
+        inline_keyboard=[[
+            InlineKeyboardButton(
+                text="❌ Удалить",
+                callback_data=f"admin:del_back:{back_id}"
+            )
+        ]]
     )
