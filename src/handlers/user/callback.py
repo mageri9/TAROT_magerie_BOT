@@ -76,18 +76,15 @@ async def reroll_card(callback: CallbackQuery):
             meaning = meaning_direct or "Толкование в разработке"
             position_text = ""
 
-        caption = f"✨ {card_name}{position_text} ✨\n\n{meaning}"
+        caption = f"✨ {card_name}{position_text} ✨\n\n{meaning}\n\n✨ На этом фортуна дает свой окончательный ответ. ✨"
     else:
-        caption = f"✨ {card_name} ✨\n\nТолкование в разработке"
-
+        caption = f"✨ {card_name} ✨\n\nТолкование в разработке\n\n✨ На этом фортуна дает свой окончательный ответ. ✨"
 
     await callback.message.edit_media(
-                                    InputMediaPhoto(
-                                    media=card_file_id,
-                                    caption=caption
-                                                   ),
-                                reply_markup=open_card_actions_keyboard(card_id)
-                                     )
+        InputMediaPhoto(media=card_file_id, caption=caption),
+        reply_markup=None
+    )
+
     await callback.answer(f" {card_name}!")
 
 

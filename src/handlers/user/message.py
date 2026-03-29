@@ -18,7 +18,8 @@ async def start_handler(message: Message):
         username=message.from_user.username,
     )
     await message.answer(
-        f'<b>{html.escape(message.from_user.full_name)}</b>, добро пожаловать!',
+        f'<b>{html.escape(message.from_user.full_name)}</b>, добро пожаловать!\n'
+        f'Вам доступна 🔮 КАРТА ДНЯ 🔮',
         reply_markup=card_of_the_day()
                         )
 
@@ -36,7 +37,7 @@ async def card_of_day(message: types.Message):
 
     await message.answer_photo(
         card_back,
-        caption="🔮 Пока не открыли карту, введите что-нибудь. В будущем это на что-то повлияет",
+        caption="🔮 Пока не открыли карту, тщательно сформулируйте вопрос в голове.",
         reply_markup=open_card_button(card_id)
                                 )
 
