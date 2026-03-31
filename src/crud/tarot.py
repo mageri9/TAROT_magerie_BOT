@@ -10,7 +10,11 @@ async def init_tarot_cards_table():
             suit TEXT,
             card_number TEXT,
             file_id TEXT,
-            description TEXT
+            description TEXT,
+            meaning_direct TEXT,
+            meaning_reversed TEXT,
+            detailed_direct TEXT,
+            detailed_reversed TEXT
         )
     ''')
 

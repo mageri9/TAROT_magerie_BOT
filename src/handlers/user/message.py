@@ -19,7 +19,8 @@ async def start_handler(message: Message):
     )
     await message.answer(
         f'<b>{html.escape(message.from_user.full_name)}</b>, добро пожаловать!\n'
-        f'Вам доступна 🔮 КАРТА ДНЯ 🔮',
+        f'Я ваш личный бот таролог.'
+        f'Вам доступна ✨ КАРТА ДНЯ ✨',
         reply_markup=card_of_the_day()
                         )
 
@@ -32,7 +33,8 @@ async def card_of_day(message: types.Message):
     card_id, card_back = await srv.give_daily_card(user_id)
 
     if not card_back:
-        await message.answer("Вы уже получали карту сегодня.")
+        await message.answer("Вы уже получали карту сегодня.\n"
+                             "Приходите завтра!")
         return
 
     await message.answer_photo(

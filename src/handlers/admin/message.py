@@ -12,10 +12,12 @@ from ...keyboards.admin import get_admin_keyboard, get_cancel_keyboard
 from .callback import AdminStates
 
 router = Router()
+print("✅ admin/message.py загружен, роутер создан")
 
-
+@router.message(Command("admin"), IsAdmin())
 async def admin_handler(message: Message):
     """Вход в админ меню по команде /admin"""
+    print("✅ Хэндлер /admin вызван")
     await message.answer(
         f'Welcome to admin menu, {html.escape(message.from_user.full_name)}',
         reply_markup=get_admin_keyboard()
@@ -62,7 +64,7 @@ async def handle_photo_for_save_back(message: Message, state: FSMContext):
 
 def register_handlers():
     """Регистрируем обработчики сообщений админа"""
-    router.message.register(admin_handler, Command('admin'), IsAdmin())
+    pass
 
 
 

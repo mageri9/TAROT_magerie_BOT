@@ -76,7 +76,10 @@ async def reroll_card(callback: CallbackQuery):
             meaning = meaning_direct or "Толкование в разработке"
             position_text = ""
 
-        caption = f"✨ {card_name}{position_text} ✨\n\n{meaning}\n\n✨ На этом фортуна дает свой окончательный ответ. ✨"
+        caption = (f"✨ {card_name}{position_text} ✨\n\n"
+                   f"{meaning}\n\n"
+                   f"✨ На этом фортуна дает свой окончательный ответ. ✨\n\n"
+                   f"✨ Приходите завтра!")
     else:
         caption = f"✨ {card_name} ✨\n\nТолкование в разработке\n\n✨ На этом фортуна дает свой окончательный ответ. ✨"
 
