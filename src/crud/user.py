@@ -5,7 +5,7 @@ async def init_users_table():
     """Создать таблицу users"""
     await db.execute('''
                     CREATE TABLE IF NOT EXISTS users (
-                    user_id INTEGER PRIMARY KEY,
+                    user_id BIGINT PRIMARY KEY,
                     username TEXT,
                     created_at TEXT NOT NULL
                                                     )

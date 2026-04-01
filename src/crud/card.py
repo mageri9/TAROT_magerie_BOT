@@ -5,7 +5,7 @@ async def init_daily_cards_table():
     """Создает таблицу для карт дня"""
     await db.execute('''
         CREATE TABLE IF NOT EXISTS user_cards (
-            user_id INTEGER PRIMARY KEY,
+            user_id BIGINT PRIMARY KEY,
             last_card_date TEXT NOT NULL
         )
     ''')
