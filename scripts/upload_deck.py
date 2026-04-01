@@ -7,7 +7,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from aiogram import Bot
 from aiogram.types import FSInputFile
-from src.core.config import Settings
+from src.core.config import settings
 from src.core.db import db
 from src.crud import (
     init_tarot_cards_table,
@@ -32,8 +32,8 @@ async def upload_deck():
     """Загрузить колоду из 78 карт в БД"""
     print("🚀 Начинаю загрузку колоды...")
 
-    config = Settings()
-    bot = Bot(token=config.BOT_TOKEN)
+
+    bot = Bot(token=settings.BOT_TOKEN)
     await db.connect()
 
     await init_tarot_cards_table()
@@ -69,7 +69,7 @@ async def upload_deck():
         photo = FSInputFile(str(img_file))
 
         msg = await bot.send_photo(
-            chat_id=config.ADMIN_IDS[0],
+            chat_id=settings.ADMIN_IDS[0],
             photo=photo,
             caption=f"📸 [{card_id}] {card['name']}"
         )
@@ -89,13 +89,6 @@ async def upload_deck():
 
     total = await get_total_cards_count()
     print(f"\n🎉 Готово! В БД {total} карт")
-
-    print("\n📊 Диапазон ID:")
-    print("  Старшие Арканы: 0-21")
-    print("  Cups: 22-35")
-    print("  Swords: 36-49")
-    print("  Wands: 50-63")
-    print("  Pentacles: 64-77")
 
     await db.close()
     await bot.session.close()

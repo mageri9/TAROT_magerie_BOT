@@ -4,22 +4,22 @@ async def init_card_back_table():
     """Создает таблицу для хранения рубашки карт"""
     await db.execute('''
                         CREATE TABLE IF NOT EXISTS card_back (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
                         file_id TEXT NOT NULL
-    )
-                                                            
+                                                             )                                                        
                      ''')
+
 async def add_card_back(file_id: str) -> None:
     """Добавить новую рубашку"""
     await db.execute('''
-                    INSERT INTO card_back (file_id) VALUES (?)
-    ''', (file_id,))
+                    INSERT INTO card_back (file_id) VALUES ($1)
+                     ''', (file_id,))
 
 async def get_random_card_back() -> None:
     """Получить случайную рубашку"""
     result = await db.fetchone('''
       SELECT file_id FROM card_back ORDER BY RANDOM() LIMIT 1
-      ''')
+                               ''')
     return result[0] if result else None
 
 async def get_all_card_backs():
@@ -28,7 +28,7 @@ async def get_all_card_backs():
 
 async def delete_card_back(file_id: int) -> None:
     """Удалить рубашку"""
-    await db.execute('DELETE FROM card_back WHERE id = ?', (file_id,))
+    await db.execute('DELETE FROM card_back WHERE id = $1', (file_id,))
 
 
 

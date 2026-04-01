@@ -28,7 +28,7 @@ async def test_can_get_card_yesterday(test_db):
     # Вручную меняем дату в БД
     yesterday = (date.today() - timedelta(days=1)).isoformat()
     await test_db.execute(
-        "INSERT INTO user_cards (user_id, last_card_date) VALUES (?, ?)",
+        "INSERT INTO user_cards (user_id, last_card_date) VALUES (1$, 2$)",
         (user_id, yesterday)
     )
 

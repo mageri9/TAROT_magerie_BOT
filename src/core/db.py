@@ -1,4 +1,4 @@
-import aiosqlite
+import asyncpg
 
 from ..core.config import Settings
 
@@ -6,30 +6,28 @@ from ..core.config import Settings
 class DBConnect:
     def __init__(self, db_url: str):
         self.db_url = db_url
-        self.connection: aiosqlite.Connection = None
-        self.cursor: aiosqlite.Cursor = None
         self.pool = None
 
     async def connect(self):
-        self.connection = await aiosqlite.connect(self.db_url)
-        self.cursor = await self.connection.cursor()
+        self.pool = await asyncpg.create_pool(self.db_url)
+        return self.pool
 
 
     async def close(self):
-        await self.cursor.close()
-        await self.connection.close()
+        if self.pool:
+            await self.pool.close()
 
-    async def execute(self, query: str, params: tuple = ()):
-        await self.cursor.execute(query, params)
-        await self.connection.commit()
+    async def execute(self, query: str, params: tuple = ()) -> tuple:
+        async with self.pool.acquire() as conn:
+            return await conn.execute(query, *params)
 
-    async def fetchall(self, query: str, params: tuple = ()) -> list[tuple]:
-        await self.cursor.execute(query, params)
-        return await self.cursor.fetchall()
+    async def fetchall(self, query: str, params: tuple = ()) -> list:
+        async with self.pool.acquire() as conn:
+            return await conn.fetch(query, *params)
 
     async def fetchone(self, query: str, params: tuple = ()) -> tuple:
-        await self.cursor.execute(query, params)
-        return await self.cursor.fetchone()
+        async with self.pool.acquire() as conn:
+            return await conn.fetchrow(query, *params)
 
 
 settings = Settings()

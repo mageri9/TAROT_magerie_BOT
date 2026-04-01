@@ -10,6 +10,7 @@ def get_env_path() -> Path:
 class Settings(BaseSettings):
     BOT_TOKEN: str
     ADMIN_IDS: list[int]
+    DATABASE_URL: str = "sqlite:///database/db.db"
 
     class Config:
         env_file = get_env_path()
@@ -17,7 +18,6 @@ class Settings(BaseSettings):
         case_sensitive = False
 
     def get_db_url(self) -> str:
-        db_path = Path(__file__).resolve().parent.parent / "database" / "db.db"
-        return str(db_path)
+        return self.DATABASE_URL
 
 settings = Settings()

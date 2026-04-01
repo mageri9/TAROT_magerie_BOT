@@ -14,9 +14,9 @@ async def can_get_card(user_id: int) -> bool:
     """Проверяет, получал ли пользователь карту сегодня"""
     today = date.today().isoformat()
     result = await db.fetchone(
-        'SELECT last_card_date FROM user_cards WHERE user_id = ?',
+        'SELECT last_card_date FROM user_cards WHERE user_id = $1',
         (user_id,)
-    )
+                              )
     if not result:
         return True
     return result[0] != today
@@ -27,7 +27,7 @@ async def save_card_requests(user_id: int) -> None:
     today = date.today().isoformat()
     await db.execute('''
         INSERT INTO user_cards (user_id, last_card_date)
-        VALUES (?, ?)
+        VALUES ($1, $2)
         ON CONFLICT (user_id) DO UPDATE SET
-            last_card_date = excluded.last_card_date 
+            last_card_date = EXCLUDED.last_card_date 
     ''', (user_id, today))

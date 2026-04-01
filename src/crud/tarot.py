@@ -15,21 +15,22 @@ async def init_tarot_cards_table():
             meaning_reversed TEXT,
             detailed_direct TEXT,
             detailed_reversed TEXT
-        )
-    ''')
+                                               )
+                    ''')
 
 async def save_tarot_card(card_id: int, name: str, arcana: str, suit: str, card_number: str, file_id: str):
     """Сохранить карту в БД"""
     await db.execute('''
         INSERT INTO tarot_cards (id, name, arcana, suit, card_number, file_id, description)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    ''', (card_id, name, arcana, suit, card_number, file_id, None))
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+                     ''', (card_id, name, arcana, suit, card_number, file_id, None)
+                     )
 
 async def get_random_card():
     """Получить случайную карту из колоды"""
     return await db.fetchone('''
         SELECT id, name, file_id FROM tarot_cards ORDER BY RANDOM() LIMIT 1
-    ''')
+                             ''')
 
 async def get_card_by_id(card_id: int):
     """Получить карту по ID"""
@@ -37,8 +38,8 @@ async def get_card_by_id(card_id: int):
         SELECT id, name, file_id,
         meaning_direct, meaning_reversed,
         detailed_direct, detailed_reversed
-        FROM tarot_cards WHERE id = ?
-    ''', (card_id,))
+        FROM tarot_cards WHERE id = $1
+                             ''', (card_id,))
 
 async def get_total_cards_count() -> int:
     """Сколько карт в колоде"""
