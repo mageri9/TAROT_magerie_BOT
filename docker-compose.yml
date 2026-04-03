@@ -1,0 +1,27 @@
+services:
+  bot:
+    build: .
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql://bot_user:bot_pass@postgres:5432/tarot_bot
+    env_file:
+      - .env
+    restart: always
+    volumes:
+      - ./src:/app/src
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: tarot_bot
+      POSTGRES_USER: bot_user
+      POSTGRES_PASSWORD: bot_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  postgres_data:

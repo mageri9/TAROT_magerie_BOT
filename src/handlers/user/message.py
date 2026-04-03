@@ -19,7 +19,7 @@ async def start_handler(message: Message):
     )
     await message.answer(
         f'<b>{html.escape(message.from_user.full_name)}</b>, добро пожаловать!\n'
-        f'Я ваш личный бот таролог.\n'
+        f'Я бот-предсказатель.\n'
         f'Вам доступна ✨ КАРТА ДНЯ ✨',
         reply_markup=card_of_the_day()
                         )

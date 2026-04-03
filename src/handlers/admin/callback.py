@@ -33,17 +33,13 @@ async def get_photo_id_start(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data == "admin:save_card_back", IsAdmin())
 async def save_card_back_start(callback: CallbackQuery, state: FSMContext):
     """Начало сохранения рубашки"""
-    print("1. Хэндлер вызван")
     await state.set_state(AdminStates.waiting_for_save_back)
-    print("2. Состояние установлено")
     await callback.message.answer(
         "🃏 Отправьте фото для новой рубашки карт\n\n"
         "После отправки фото рубашка будет сохранена",
         reply_markup=get_cancel_keyboard()
     )
-    print("3. Сообщение отправлено")
     await callback.answer()
-    print("4. Callback answered")
 
 @router.callback_query(F.data == "admin:view_card_back", IsAdmin())
 async def view_card_backs(callback: CallbackQuery):

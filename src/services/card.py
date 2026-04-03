@@ -25,5 +25,6 @@ async def give_daily_card(user_id: int):
 
     # Возвращаем ID карты и рубашку
     card_back = await get_card_back()
+    print(f"🔍 card_back = {card_back}")
     return card_id, card_back
 

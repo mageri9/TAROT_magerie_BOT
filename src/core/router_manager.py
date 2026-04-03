@@ -10,7 +10,7 @@ import src.handlers.admin.callback as admin_query
 
 def setup_routers():
     router = Router()
-    print("Роутер admin_message:", admin_message.router)
+
 
     routers = [user_message, user_query, admin_message, admin_query]
 

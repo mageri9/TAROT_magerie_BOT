@@ -11,7 +11,9 @@ def card_of_the_day():
 def open_card_actions_keyboard(card_id: int) -> InlineKeyboardMarkup:
     """Клавиатура после открытия карты"""
     buttons = [
-        [InlineKeyboardButton(text="🔮 Можешь посмотреть ещё одну. Я никому не скажу. ", callback_data=f"reroll:{card_id}")]
+        [InlineKeyboardButton(text="🔮 Можешь посмотреть ещё одну.\n"
+                                   " Я никому не скажу.",
+                              callback_data=f"reroll:{card_id}")]
               ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
