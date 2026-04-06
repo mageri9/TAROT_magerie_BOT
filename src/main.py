@@ -11,6 +11,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 
 from filters.chat_type import ChatTypeFilter
 from middlewares.logger import LoggerMiddleware
+from src.middlewares.throttling import ThrottlingMiddleware
 
 from core.router_manager import setup_routers
 from core.config import Settings
@@ -40,6 +41,10 @@ async def main():
     dp = Dispatcher(storage=storage, config=config, bot_info=bot_info, db=db)
 
     dp.include_routers(router)
+
+    # Ограничение на сообщения и колбэки
+    dp.message.middleware(ThrottlingMiddleware())
+    dp.callback_query.middleware(ThrottlingMiddleware())
 
     dp.update.outer_middleware(LoggerMiddleware())
 
