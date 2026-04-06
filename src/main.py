@@ -10,11 +10,13 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from filters.chat_type import ChatTypeFilter
+
 from middlewares.logger import LoggerMiddleware
-from src.middlewares.throttling import ThrottlingMiddleware
 
 from core.router_manager import setup_routers
 from core.config import Settings
+from middlewares.minute_limit import MinuteLimitMiddleware
+from middlewares.throttling import ThrottlingMiddleware
 from src.core.db import db
 
 from src.database.init import init_all_tables
@@ -42,10 +44,8 @@ async def main():
 
     dp.include_routers(router)
 
-    # Ограничение на сообщения и колбэки
-    dp.message.middleware(ThrottlingMiddleware())
-    dp.callback_query.middleware(ThrottlingMiddleware())
-
+    dp.update.outer_middleware(ThrottlingMiddleware())
+    dp.update.outer_middleware(MinuteLimitMiddleware())
     dp.update.outer_middleware(LoggerMiddleware())
 
     dp.message.filter(

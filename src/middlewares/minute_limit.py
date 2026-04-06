@@ -6,14 +6,11 @@ from aiogram.dispatcher.event.bases import UNHANDLED
 from loguru import logger
 
 
-class ThrottlingMiddleware(BaseMiddleware):
-    def __init__(self, rate_limit: float = 1.0, max_violations: int = 3, block_time: int = 30):
-        super().__init__()
-        self.rate_limit = rate_limit
-        self.max_violations = max_violations
-        self.block_time = block_time
-        self.last_requests = {}
-        self.violations = {}
+class MinuteLimitMiddleware(BaseMiddleware):
+    def __init__(self, limit: int = 10, block_minutes: int = 5):
+        self.limit = limit
+        self.block_seconds = block_minutes * 60
+        self.requests = {}
         self.blocked_until = {}
 
     async def __call__(
@@ -42,28 +39,27 @@ class ThrottlingMiddleware(BaseMiddleware):
                     pass
             return UNHANDLED
 
-        last = self.last_requests.get(user_id, 0)
 
-        # Проверка интервала
-        if now - last < self.rate_limit:
-            self.violations[user_id] = self.violations.get(user_id, 0) + 1
-            violations = self.violations[user_id]
+        # Очистка старых меток
+        if user_id in self.requests:
+            self.requests[user_id] = [t for t in self.requests[user_id] if now - t < 60]
+        else:
+            self.requests[user_id] = []
 
-            if violations >= self.max_violations:
-                self.blocked_until[user_id] = now + self.block_time
-                logger.warning(f"User {user_id} blocked for {self.block_time}s")
-                await self._notify_user(event, user_id)
-
+        # Проверка лимита
+        if len(self.requests[user_id]) >= self.limit:
+            self.blocked_until[user_id] = now + self.block_seconds
+            logger.warning(f"User {user_id} minute-limit blocked for {self.block_seconds}s")
+            await self._notify_user(event, user_id)
             return UNHANDLED
 
         # Всё хорошо
-        self.violations[user_id] = 0
-        self.last_requests[user_id] = now
+        self.requests[user_id].append(now)
         return await handler(event, data)
 
     async def _notify_user(self, event: Update, user_id: int):
         """Отправляет уведомление пользователю о блокировке"""
         if event.message:
-            await event.message.answer("🚫 Блокировка на 30 секунд.")
+            await event.message.answer("🚫 Слишком много сообщений! Блокировка на 5 минут.")
         elif event.callback_query:
-            await event.callback_query.answer("🚫 Блокировка на 30 секунд", show_alert=True)
+            await event.callback_query.answer("🚫 Блокировка на 5 минут", show_alert=True)
