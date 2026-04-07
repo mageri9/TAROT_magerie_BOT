@@ -42,7 +42,7 @@ async def main():
     await init_all_tables()
 
     storage = MemoryStorage()  # для продакшена можно заменить на RedisStorage
-    dp = Dispatcher(storage=storage, config=config, bot_info=bot_info, db=db)
+    dp = Dispatcher(storage=storage, config=config, bot_info=bot_info, db=db, fsm_timeout=300)
 
     dp.include_routers(router)
 
