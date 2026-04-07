@@ -1,7 +1,8 @@
 # 🔮 Tarot Magerie Bot
 
 Телеграм-бот для гадания на Таро. Карта дня, перевёрнутые карты, случайная рубашка, одноразовый реролл.
-
+ДЕМО:
+![Image](https://github.com/user-attachments/assets/a6ae1bff-ef28-45aa-868d-2ad2286e5b5d)
 ---
 
 ## 🃏 Особенности
