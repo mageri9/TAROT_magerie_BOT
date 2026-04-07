@@ -2,12 +2,13 @@ services:
   bot:
     build: .
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       DATABASE_URL: postgresql://bot_user:bot_pass@postgres:5432/tarot_bot
     env_file:
       - .env
-    restart: always
+    restart: unless-stopped
     volumes:
       - ./src:/app/src
 
@@ -17,11 +18,17 @@ services:
       POSTGRES_DB: tarot_bot
       POSTGRES_USER: bot_user
       POSTGRES_PASSWORD: bot_pass
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "bot_user", "-d", "tarot_bot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    restart: always
+    restart: unless-stopped
 
 volumes:
   postgres_data:
