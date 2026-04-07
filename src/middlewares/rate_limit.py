@@ -94,7 +94,7 @@ class RateLimitMiddleware(BaseMiddleware):
         return result
 
     @staticmethod
-    def _get_user_id(self, event: Update) -> int | None:
+    def _get_user_id(event: Update) -> int | None:
         if event.message:
             return event.message.from_user.id
         elif event.callback_query:
@@ -102,7 +102,7 @@ class RateLimitMiddleware(BaseMiddleware):
         return None
 
     @staticmethod
-    async def _cleanup(self, event: Update):
+    async def _cleanup(event: Update):
         """Удаляет сообщение пользователя"""
         if event.message:
             try:
@@ -111,7 +111,7 @@ class RateLimitMiddleware(BaseMiddleware):
                 pass
 
     @staticmethod
-    async def _notify_user(self, event: Update, text: str):
+    async def _notify_user(event: Update, text: str):
         """Отправляет уведомление о блокировке"""
         if event.message:
             await event.message.answer(text)
@@ -119,7 +119,7 @@ class RateLimitMiddleware(BaseMiddleware):
             await event.callback_query.answer(text, show_alert=True)
 
     @staticmethod
-    async def _restore_keyboard(self, event: Update):
+    async def _restore_keyboard(event: Update):
         """Тихо восстанавливает клавиатуру"""
         if not event.message:
             return
