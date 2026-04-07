@@ -11,14 +11,16 @@ from aiogram.fsm.storage.memory import MemoryStorage
 
 from filters.chat_type import ChatTypeFilter
 
-from middlewares.logger import LoggerMiddleware
-
 from core.router_manager import setup_routers
 from core.config import Settings
+
 from middlewares.minute_limit import MinuteLimitMiddleware
 from middlewares.throttling import ThrottlingMiddleware
-from src.core.db import db
+from src.middlewares.error_handler import ErrorHandlerMiddleware
+from middlewares.logger import LoggerMiddleware
 
+
+from src.core.db import db
 from src.database.init import init_all_tables
 
 
@@ -44,9 +46,12 @@ async def main():
 
     dp.include_routers(router)
 
-    dp.update.outer_middleware(ThrottlingMiddleware())
-    dp.update.outer_middleware(MinuteLimitMiddleware())
+
+    dp.update.middleware(ErrorHandlerMiddleware())
     dp.update.outer_middleware(LoggerMiddleware())
+
+    dp.update.middleware(ThrottlingMiddleware())
+    dp.update.middleware(MinuteLimitMiddleware())
 
     dp.message.filter(
         ChatTypeFilter(chat_type=["private"])
