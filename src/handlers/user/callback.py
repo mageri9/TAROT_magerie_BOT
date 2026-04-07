@@ -1,5 +1,6 @@
 from aiogram import Router, F
-from aiogram.types import CallbackQuery, InputMediaPhoto
+from aiogram.filters import Command
+from aiogram.types import CallbackQuery, InputMediaPhoto, Message, ReplyKeyboardRemove
 
 import random
 
@@ -8,6 +9,10 @@ from ...crud.tarot import get_card_by_id, get_random_card
 
 
 router = Router()
+
+@router.message(Command("hide"))
+async def hide_keyboard(message: Message):
+    await message.answer("Клавиатура скрыта", reply_markup=ReplyKeyboardRemove())
 
 
 @router.callback_query(F.data.startswith("open_card"))

@@ -1,6 +1,4 @@
-from aiogram.types import User
-
-from ..crud import get_user, create_user, update_username
+from ..crud import get_user, create_user
 
 
 async def register_user(user_id: int, username: str = None):

@@ -14,11 +14,10 @@ from filters.chat_type import ChatTypeFilter
 from core.router_manager import setup_routers
 from core.config import Settings
 
-from middlewares.minute_limit import MinuteLimitMiddleware
-from middlewares.throttling import ThrottlingMiddleware
-from src.middlewares.error_handler import ErrorHandlerMiddleware
-from middlewares.logger import LoggerMiddleware
 
+from middlewares.error_handler import ErrorHandlerMiddleware
+from middlewares.logger import LoggerMiddleware
+from middlewares.rate_limit import RateLimitMiddleware
 
 from src.core.db import db
 from src.database.init import init_all_tables
@@ -47,11 +46,10 @@ async def main():
     dp.include_routers(router)
 
 
+    dp.update.middleware(RateLimitMiddleware())
     dp.update.middleware(ErrorHandlerMiddleware())
     dp.update.outer_middleware(LoggerMiddleware())
 
-    dp.update.middleware(ThrottlingMiddleware())
-    dp.update.middleware(MinuteLimitMiddleware())
 
     dp.message.filter(
         ChatTypeFilter(chat_type=["private"])
