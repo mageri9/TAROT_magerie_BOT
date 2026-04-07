@@ -1,8 +1,8 @@
 # 🔮 Tarot Magerie Bot
 
 Телеграм-бот для гадания на Таро. Карта дня, перевёрнутые карты, случайная рубашка, одноразовый реролл.
-ДЕМО:
-![Image](https://github.com/user-attachments/assets/a6ae1bff-ef28-45aa-868d-2ad2286e5b5d)
+
+![Image](https://github.com/user-attachments/assets/248952eb-f1be-41af-aa92-014a3e3a647a)
 ---
 
 ## 🃏 Особенности
@@ -34,18 +34,18 @@
 ### Локально (PostgreSQL)
 
 1. **Установить PostgreSQL** и создать БД:
-   ```sql
+   sql
    CREATE DATABASE tarot_bot;
    CREATE USER bot_user WITH PASSWORD 'bot_pass';
    GRANT ALL PRIVILEGES ON DATABASE tarot_bot TO bot_user;
    
 2. **Клонировать репозиторий:**
-    ```bash 
+    bash 
     git clone https://github.com/mageri9/TAROT_magerie_BOT.git
     cd tarot-bot
 
 3. **Установить зависимости:**
-    ```bash
+    bash
     pip install -r requirements.txt
    (для тестов и скриптов)
     pip install -r requirements-dev.txt
@@ -81,6 +81,13 @@ tests/
 ├── services/             # тесты сервисов
 └── conftest.py           # фикстуры для тестов
 
+## 🛡️ Защита и надёжность
+
+- **Anti-spam:** 1 секунда между действиями, 10 сообщений в минуту
+- **Блокировка:** 30 сек (спам) / 5 мин (поток)
+- **Автоудаление** сообщений спамера
+- **Error handling:** бот не падает при любых ошибках
+- **Healthcheck:** PostgreSQL проверяется перед запуском бота
 
 ### 🔧 Команды бота
 Команда	Описание
