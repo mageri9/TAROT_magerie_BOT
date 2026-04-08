@@ -52,7 +52,6 @@ async def init_user_card_history_table() -> None:
 
 async def get_last_user_cards(user_id: int, limit: int = 10) -> list[int]:
     """Получить последние N карт пользователя (только ID)"""
-    print(f"🔍 get_last_user_cards: user_id={user_id}, limit={limit}")
 
     rows = await db.fetchall(
         "SELECT card_id FROM user_card_history "
@@ -61,16 +60,13 @@ async def get_last_user_cards(user_id: int, limit: int = 10) -> list[int]:
     )
 
     result = [row["card_id"] for row in rows]
-    print(f"🔍 get_last_user_cards result: {result}")
     return result
 
 
 async def add_card_to_history(user_id: int, card_id: int) -> None:
     """Добавить карту в историю"""
-    print(f"🔍 add_card_to_history: user_id={user_id}, card_id={card_id}")
 
     await db.execute(
         "INSERT INTO user_card_history (user_id, card_id) VALUES ($1, $2)",
         (user_id, card_id)
     )
-    print(f"✅ add_card_to_history: inserted")
