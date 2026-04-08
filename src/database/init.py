@@ -4,6 +4,7 @@ from ..crud import (
     init_card_back_table,
     init_daily_cards_table,
     init_tarot_cards_table,
+    init_user_card_history_table
                     )
 
 async def init_all_tables():
@@ -14,13 +15,14 @@ async def init_all_tables():
         ("user_cards", init_daily_cards_table),
         ("card_back", init_card_back_table),
         ("tarot_cards", init_tarot_cards_table),
+        ("card_history", init_user_card_history_table)
     ]
 
     for table_name, init_func in tables:
         try:
             await init_func()
-            logger.info(f"✅ Таблица '{table_name}' готова")
+            logger.info(f" Таблица '{table_name}' готова")
         except Exception as e:
             logger.error(f"❌ Ошибка при создании таблицы '{table_name}': {e}")
             raise
-    logger.info("🎉 Все таблицы инициализированы")
+    logger.info("Все таблицы инициализированы")

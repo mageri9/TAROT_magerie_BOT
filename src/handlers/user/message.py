@@ -31,6 +31,8 @@ async def card_of_day(message: types.Message):
     user_id = message.from_user.id
 
     card_id, card_back = await srv.give_daily_card(user_id)
+    print(f"📸 card_back = {card_back}")  # 👈 добавить
+    print(f"📸 type(card_back) = {type(card_back)}")  # 👈 добавить
 
     if not card_back:
         await message.answer("Вы уже получали карту сегодня.\n"

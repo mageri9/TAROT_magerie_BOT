@@ -1,18 +1,21 @@
 from .user import (
-get_user,
-create_user,
-update_username,
-init_users_table
+    get_user,
+    create_user,
+    update_username,
+    init_users_table
 )
 from .card import (
-can_get_card,
-save_card_requests,
-init_daily_cards_table,
+    can_get_card,
+    save_card_requests,
+    init_daily_cards_table,
+    init_user_card_history_table,
+    get_last_user_cards,
+    add_card_to_history,
 )
 from .card_back import (
-get_card_back,
-update_card_back,
-init_card_back_table
+    get_card_back,
+    update_card_back,
+    init_card_back_table,
 )
 
 from .tarot import (
@@ -34,6 +37,9 @@ __all__ = [
     'can_get_card',
     'save_card_requests',
     'init_daily_cards_table',
+    'init_user_card_history_table',
+    'get_last_user_cards',
+    'add_card_to_history',
 #card_back
     'get_card_back',
     'update_card_back',

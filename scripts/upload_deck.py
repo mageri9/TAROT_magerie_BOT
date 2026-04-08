@@ -76,14 +76,12 @@ async def upload_deck():
 
         file_id = msg.photo[-1].file_id
 
-        await save_tarot_card(
-            card_id=card_id,
-            name=card['name'],
-            arcana=card['arcana'],
-            suit=card['suit'] if card['suit'] else "Major",
-            card_number=card['number'],
-            file_id=file_id
-        )
+        await db.execute('''
+                         UPDATE tarot_cards
+                         SET file_id = $1
+                         WHERE id = $2
+                         ''', (file_id, card_id))
+
         count += 1
         print(f"✅ {count:2d}. ID={card_id:2d} | {card['name']}")
 

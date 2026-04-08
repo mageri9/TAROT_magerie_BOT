@@ -26,11 +26,29 @@ async def save_tarot_card(card_id: int, name: str, arcana: str, suit: str, card_
                      ''', (card_id, name, arcana, suit, card_number, file_id, None)
                      )
 
-async def get_random_card():
-    """Получить случайную карту из колоды"""
-    return await db.fetchone('''
-        SELECT id, name, file_id FROM tarot_cards ORDER BY RANDOM() LIMIT 1
-                             ''')
+
+async def get_random_card(excluded_ids: list[int] = None) -> tuple | None:
+    """Получить случайную карту. Если передан excluded_ids — исключить эти ID."""
+    print(f"🔍 get_random_card: excluded_ids={excluded_ids}")
+
+    if not excluded_ids:
+        print(f"🔍 get_random_card: no excluded, simple query")
+        return await db.fetchone(
+            "SELECT id, name, file_id FROM tarot_cards ORDER BY RANDOM() LIMIT 1"
+        )
+
+    placeholders = ','.join(f'${i + 1}' for i in range(len(excluded_ids)))
+    query = f"""
+        SELECT id, name, file_id FROM tarot_cards 
+        WHERE id NOT IN ({placeholders}) 
+        ORDER BY RANDOM() LIMIT 1
+    """
+    print(f"🔍 get_random_card: query={query}")
+    print(f"🔍 get_random_card: excluded_ids tuple={tuple(excluded_ids)}")
+
+    result = await db.fetchone(query, tuple(excluded_ids))
+    print(f"🔍 get_random_card: result={result}")
+    return result
 
 async def get_card_by_id(card_id: int):
     """Получить карту по ID"""
