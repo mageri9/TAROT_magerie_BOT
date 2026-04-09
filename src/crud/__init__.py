@@ -11,6 +11,8 @@ from .card import (
     init_user_card_history_table,
     get_last_user_cards,
     add_card_to_history,
+    update_card_stats,
+    get_user_stats,
 )
 from .card_back import (
     get_card_back,
@@ -40,6 +42,8 @@ __all__ = [
     'init_user_card_history_table',
     'get_last_user_cards',
     'add_card_to_history',
+    'update_card_stats',
+    'get_user_stats',
 #card_back
     'get_card_back',
     'update_card_back',

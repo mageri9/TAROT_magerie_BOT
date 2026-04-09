@@ -4,7 +4,10 @@ from aiogram import Router, F, types
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 
+from src.crud import get_user_stats
+
 import src.services as srv
+
 from ...keyboards.user import open_card_button, card_of_the_day
 
 
@@ -24,7 +27,6 @@ async def start_handler(message: Message):
         reply_markup=card_of_the_day()
                         )
 
-
 @router.message(F.text == '🔮 КАРТА ДНЯ 🔮')
 async def card_of_day(message: types.Message):
     """Обработчик кнопки '🔮 КАРТА ДНЯ 🔮'"""
@@ -43,5 +45,25 @@ async def card_of_day(message: types.Message):
         reply_markup=open_card_button(card_id)
                                 )
 
+@router.message(F.text == "📜 ПРОФИЛЬ 📜")
+async def profile(message: Message):
+    """Статистика пользователя (кнопка)"""
+    user_id = message.from_user.id
+    stats = await get_user_stats(user_id)
+
+    if not stats or stats[0] == 0:
+        await message.answer("🔮 Откройте одну карту.")
+        return
+
+    total, upright, reversed_ = stats
+
+    text = f"""
+    
+    📜 Всего значений: {total}/156
+    🃏: {upright}
+    🎴: {reversed_}
+            """
+    await message.answer(text)
+    
 def register_handlers():
     pass

@@ -6,9 +6,35 @@ async def init_daily_cards_table():
     await db.execute('''
         CREATE TABLE IF NOT EXISTS user_cards (
             user_id BIGINT PRIMARY KEY,
-            last_card_date TEXT NOT NULL
+            last_card_date TEXT NOT NULL,
+            total_cards INTEGER DEFAULT 0,
+            upright_count INTEGER DEFAULT 0,
+            reversed_count INTEGER DEFAULT 0
         )
     ''')
+
+async def update_card_stats(user_id: int, is_reversed: bool) -> None:
+    """Обновить статистику пользователя после открытия карты"""
+    if is_reversed:
+        await db.execute(
+            "UPDATE user_cards SET total_cards = total_cards + 1, reversed_count = reversed_count + 1"
+            " WHERE user_id = $1",
+            (user_id,)
+        )
+    else:
+        await db.execute(
+            "UPDATE user_cards SET total_cards = total_cards + 1, upright_count = upright_count + 1"
+            " WHERE user_id = $1",
+            (user_id,)
+        )
+
+async def get_user_stats(user_id: int) -> tuple | None:
+    """Получить статистику пользователя"""
+    return await db.fetchone(
+        "SELECT total_cards, upright_count, reversed_count FROM user_cards WHERE user_id = $1",
+        (user_id,)
+    )
+
 
 async def can_get_card(user_id: int) -> bool:
     """Проверяет, получал ли пользователь карту сегодня"""

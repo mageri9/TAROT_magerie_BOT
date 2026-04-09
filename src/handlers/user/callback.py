@@ -1,23 +1,19 @@
 from aiogram import Router, F
-from aiogram.filters import Command
-from aiogram.types import CallbackQuery, InputMediaPhoto, Message, ReplyKeyboardRemove
+from aiogram.types import CallbackQuery, InputMediaPhoto
 
 import random
 
 from ...keyboards.user import open_card_actions_keyboard
-from ...crud.tarot import get_card_by_id, get_random_card
 
+from src.crud import get_card_by_id, get_random_card
+from src.crud import update_card_stats
 
 router = Router()
-
-@router.message(Command("hide"))
-async def hide_keyboard(message: Message):
-    await message.answer("Клавиатура скрыта", reply_markup=ReplyKeyboardRemove())
-
 
 @router.callback_query(F.data.startswith("open_card"))
 async def open_card(callback: CallbackQuery):
     """Открыть карту по ID"""
+    user_id = callback.from_user.id
     parts = callback.data.split(":")
     card_id = int(parts[1]) if len(parts) > 1 else None
 
@@ -29,6 +25,7 @@ async def open_card(callback: CallbackQuery):
              detailed_direct, detailed_reversed) = card
 
             is_reversed = random.choice([True, False])
+            await update_card_stats(user_id, is_reversed)
 
             if is_reversed:
                 meaning = meaning_reversed
@@ -55,10 +52,6 @@ async def open_card(callback: CallbackQuery):
 @router.callback_query(F.data.startswith("reroll"))
 async def reroll_card(callback: CallbackQuery):
     """Другая карта (реролл)"""
-    parts = callback.data.split(":")
-    old_card_id = int(parts[1]) if len(parts) > 1 else None
-
-    # Получаем новую случайную карту
     card = await get_random_card()
     if not card:
         await callback.answer("❌ Не удалось получить карту")
@@ -73,6 +66,9 @@ async def reroll_card(callback: CallbackQuery):
          detailed_direct, detailed_reversed) = full_card
 
         is_reversed = random.choice([True, False])
+
+        user_id = callback.from_user.id
+        await update_card_stats(user_id, is_reversed)
 
         if is_reversed:
             meaning = meaning_reversed or "Толкование в разработке"
