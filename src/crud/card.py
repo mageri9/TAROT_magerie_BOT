@@ -38,7 +38,7 @@ async def init_user_card_history_table() -> None:
     """Создать таблицу истории карт пользователя"""
     await db.execute('''
     CREATE TABLE IF NOT EXISTS user_card_history (
-        id BIGINT PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         user_id BIGINT NOT NULL,
         card_id INTEGER NOT NULL,
         opened_at TIMESTAMP DEFAULT NOW()
