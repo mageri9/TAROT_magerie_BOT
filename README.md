@@ -25,7 +25,7 @@
 | **Фреймворк** | aiogram 3.x |
 | **База данных** | PostgreSQL / asyncpg |
 | **Тестирование** | pytest, pytest-asyncio |
-| **Контейнеризация** | Docker (в плане) |
+| **Контейнеризация** | Docker |
 
 ---
 
@@ -62,12 +62,12 @@
 ### 📁 Структура
 src/
 ├── core/          # ядро (config, db, router)
-├── crud/          # работа с БД
+├── crud/          # работа с записью
 ├── services/      # бизнес-логика
 ├── handlers/      # обработчики команд и колбэков
 ├── keyboards/     # клавиатуры
 ├── filters/       # фильтры (IsAdmin, ChatType)
-├── middlewares/   # логирование
+├── middlewares/   # логирование, защита
 └── database/      # инициализация таблиц
 
 scripts/
