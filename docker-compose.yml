@@ -6,6 +6,8 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://bot_user:bot_pass@postgres:5432/tarot_bot
+      HTTP_PROXY: socks5://proxyuser:1234@72.56.251.143:1080
+      HTTPS_PROXY: socks5://proxyuser:1234@72.56.251.143:1080
     env_file:
       - .env
     restart: unless-stopped
