@@ -59,7 +59,8 @@ async def profile(message: Message):
 
     text = f"""
     
-    📜 Всего значений: {total}/156
+    📜 Всего: {total}/156
+    
     🃏: {upright}
     🎴: {reversed_}
             """

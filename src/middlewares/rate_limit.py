@@ -120,12 +120,12 @@ class RateLimitMiddleware(BaseMiddleware):
 
     @staticmethod
     async def _restore_keyboard(event: Update):
-        """Тихо восстанавливает клавиатуру"""
+        """Тихо восстанавливает клавиатуру через сообщение"""
         if not event.message:
             return
 
         text = event.message.text
-        if text and text not in ["/start", "/menu", "/hide", "🔮 КАРТА ДНЯ 🔮", "📜 ПРОФИЛЬ 📜"]:
+        if text and text not in ["/start", "/menu", "🔮 КАРТА ДНЯ 🔮", "📜 ПРОФИЛЬ 📜"]:
             try:
                 await event.message.answer(
                     "🔮",
