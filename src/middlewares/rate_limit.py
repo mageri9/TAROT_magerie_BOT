@@ -125,7 +125,7 @@ class RateLimitMiddleware(BaseMiddleware):
             return
 
         text = event.message.text
-        if text and text not in ["/start", "/menu", "🔮 КАРТА ДНЯ 🔮", "📜 ПРОФИЛЬ 📜"]:
+        if text and text not in ["/start", "/menu", "🔮 КАРТА ДНЯ 🔮", "📜 ПРОФИЛЬ 📜", "❓ ПОМОЩЬ ❓"]:
             try:
                 await event.message.answer(
                     "🔮",

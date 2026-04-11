@@ -4,7 +4,8 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 def card_of_the_day():
     card = [
                 [KeyboardButton(text='🔮 КАРТА ДНЯ 🔮')],
-                [KeyboardButton(text='📜 ПРОФИЛЬ 📜')]
+                [KeyboardButton(text='📜 ПРОФИЛЬ 📜')],
+                [KeyboardButton(text='❓ ПОМОЩЬ ❓')]
            ]
     return ReplyKeyboardMarkup(keyboard=card, resize_keyboard=True)
 

@@ -41,7 +41,7 @@ async def card_of_day(message: types.Message):
 
     await message.answer_photo(
         card_back,
-        caption="🔮 Пока не открыли карту, тщательно сформулируйте вопрос в голове.",
+        caption="🔮 Попробуй отправить любое сообщение в чат.",
         reply_markup=open_card_button(card_id)
                                 )
 
@@ -65,6 +65,18 @@ async def profile(message: Message):
     🎴: {reversed_}
             """
     await message.answer(text)
+
+@router.message(F.text == '❓ ПОМОЩЬ ❓')
+async def help_command(message: Message):
+    await message.answer(
+        "🔮 **Что я умею:**\n"
+        "• Карта дня — нажми кнопку.\n"
+        "• Открой карту, чтобы узнать значение.\n"
+        "• У тебя есть шанс испытать удачу повторно.\n"
+        "• Статистика — кнопка ПРОФИЛЬ.\n"
+        "• Новая карта каждый день!\n\n"
+        "📜 Если что-то сломалось — напиши @mageri9"
+    )
     
 def register_handlers():
     pass
