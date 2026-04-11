@@ -1,5 +1,6 @@
 import asyncio
 import sys
+import time
 
 from loguru import logger
 from os import environ
@@ -27,6 +28,7 @@ async def main():
     logger.add(sys.stderr, format="{time} {level} {message}", filter="template", level="INFO")
 
     environ['TZ'] = 'Europe/Moscow'
+    time.tzset()
     logger.error("Starting bot")
     config = Settings()
     router = setup_routers()
