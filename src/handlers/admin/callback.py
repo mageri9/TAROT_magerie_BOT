@@ -1,9 +1,12 @@
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, FSInputFile
 
+import subprocess
+from pathlib import Path
 
+from loguru import logger
 
 from filters.check_admin import IsAdmin
 from crud.card_back import get_all_card_backs, delete_card_back
@@ -12,6 +15,7 @@ from keyboards.admin import get_admin_keyboard, get_cancel_keyboard, get_delete_
 router = Router()
 
 # ==================== FSM состояния ====================
+
 class AdminStates(StatesGroup):
     """Состояния для админ-действий"""
     waiting_for_photo = State()
@@ -57,9 +61,7 @@ async def view_card_backs(callback: CallbackQuery):
             caption=f"🃏 Рубашка ID: {back[0]}",
             reply_markup=get_delete_back_keyboard(back[0])
         )
-
     await callback.answer()
-
 
 @router.callback_query(F.data.startswith("admin:del_back:"), IsAdmin())
 async def del_back(callback: CallbackQuery):
@@ -72,30 +74,63 @@ async def del_back(callback: CallbackQuery):
 @router.callback_query(F.data == "admin:cancel", IsAdmin())
 async def cancel_action(callback: CallbackQuery, state: FSMContext):
     """Отмена текущего действия"""
-    await state.clear()  # очищаем состояние FSM
+    await state.clear()
     await callback.message.edit_text(
         "❌ Действие отменено",
         reply_markup=get_admin_keyboard()
     )
     await callback.answer()
 
-
 @router.callback_query(F.data == "admin:exit", IsAdmin())
 async def exit_admin_panel(callback: CallbackQuery, state: FSMContext):
     """Выход из админ-панели"""
-    await state.clear()  # очищаем состояние FSM
-
-    # Удаляем сообщение с админ-меню
+    await state.clear()
     await callback.message.delete()
-
-    # Отправляем новое сообщение о выходе
     await callback.message.answer(
         "👋 Вы вышли из админ-панели\n"
         "Для входа используйте /admin"
     )
-
-    # Закрываем callback
     await callback.answer()
+
+
+import subprocess
+from pathlib import Path
+from aiogram.types import FSInputFile
+from loguru import logger
+
+
+@router.callback_query(F.data == "admin:backup", IsAdmin())
+async def admin_backup(callback: CallbackQuery):
+    """Ручной бэкап базы данных."""
+    await callback.answer("⏳ Создаю бэкап...")
+    logger.info(f"Admin {callback.from_user.id} requested backup")
+
+    backup_file = Path("/tmp/tarot_backup.sql.gz")
+
+    cmd = (
+        f"docker exec tarot_magerie_bot-postgres-1 "
+        f"pg_dump -U bot_user tarot_bot | gzip > {backup_file}"
+    )
+
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+
+    if result.returncode != 0:
+        logger.error(f"Backup failed: {result.stderr}")
+        await callback.message.answer("❌ Ошибка создания бэкапа")
+        return
+
+    if not backup_file.exists() or backup_file.stat().st_size == 0:
+        logger.error("Backup file empty or missing")
+        await callback.message.answer("❌ Файл бэкапа пуст")
+        return
+
+    await callback.message.answer_document(
+        FSInputFile(backup_file),
+        caption="✅ Бэкап готов"
+    )
+
+    backup_file.unlink(missing_ok=True)
+
 
 def register_handlers():
     """Регистрируем обработчики колбэков админа"""

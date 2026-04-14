@@ -8,10 +8,13 @@ def get_admin_keyboard() -> InlineKeyboardMarkup:
             InlineKeyboardButton(text="📸 Получить file_id", callback_data="admin:get_file_id"),
             InlineKeyboardButton(text="🃏 Добавить рубашку", callback_data="admin:save_card_back")
         ],
-            [InlineKeyboardButton(text="👁️ Посмотреть рубашки", callback_data="admin:view_card_back")]
-        ,
+        [
+            InlineKeyboardButton(text="👁️ Посмотреть рубашки", callback_data="admin:view_card_back"),
+            InlineKeyboardButton(text="📦 Сделать бэкап", callback_data="admin:backup")
+        ],
             [InlineKeyboardButton(text="🚪 Выйти.", callback_data="admin:exit")]
     ]
+
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 def get_cancel_keyboard() -> InlineKeyboardMarkup:
