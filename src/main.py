@@ -1,7 +1,6 @@
 import asyncio
 import sys
 
-
 from loguru import logger
 from os import environ
 
