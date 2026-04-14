@@ -11,10 +11,12 @@ services:
       REDIS_URL: redis://redis:6379/0
     env_file:
       - .env
+    command: sh -c "alembic upgrade head && python -m src.main"
     restart: unless-stopped
     volumes:
       - ./src:/app/src
       - ./logs:/app/logs
+      - ./alembic.ini:/app/alembic.ini
 
   postgres:
     image: postgres:15

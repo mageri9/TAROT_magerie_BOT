@@ -21,3 +21,4 @@ COPY scripts/ ./scripts/
 
 # Команда запуска
 CMD ["python", "src/main.py"]
+

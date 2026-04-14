@@ -48,6 +48,9 @@ prof/
 *.cfg
 *.ini
 *.local
+# Исключения для важных .ini
+!alembic.ini
+!pytest.ini
 
 # Package Manager
 pip-log.txt
@@ -65,7 +68,7 @@ tarot_images/
 tarot-images.json
 
 
-database/
+
 !database/README.md
 =======
 poetry.lock*.db

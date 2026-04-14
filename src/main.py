@@ -20,15 +20,13 @@ from middlewares.error_handler import ErrorHandlerMiddleware
 from middlewares.logger import LoggerMiddleware
 from middlewares.rate_limit import RateLimitMiddleware
 
-from database.init import init_all_tables
-
 
 async def main():
     setup_logging()
 
     environ['TZ'] = 'Europe/Moscow'
 
-    logger.error("Starting bot")
+    logger.info("Starting bot")
 
     config = Settings()
     router = setup_routers()
@@ -37,7 +35,6 @@ async def main():
     bot_info = await bot.get_me()
 
     await db.connect()
-    await init_all_tables()
 
     redis_client = init_redis(config.REDIS_URL)
 
@@ -63,7 +60,7 @@ async def main():
     dp.message.filter(ChatTypeFilter(chat_type=["private"]))
 
     try:
-        logger.error(f'Bot {bot_info.full_name} started (@{bot_info.username}. ID: {bot_info.id})')
+        logger.info(f'Bot {bot_info.full_name} started (@{bot_info.username}. ID: {bot_info.id})')
         await dp.start_polling(bot)
     finally:
         await bot.session.close()
