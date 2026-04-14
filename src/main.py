@@ -13,7 +13,7 @@ from filters.chat_type import ChatTypeFilter
 from core.router_manager import setup_routers
 from core.config import Settings
 from core.db import db
-
+from core.logger import setup_logging
 from core.redis import init_redis
 
 from middlewares.error_handler import ErrorHandlerMiddleware
@@ -24,7 +24,7 @@ from database.init import init_all_tables
 
 
 async def main():
-    logger.add(sys.stderr, format="{time} {level} {message}", filter="template", level="INFO")
+    setup_logging()
 
     environ['TZ'] = 'Europe/Moscow'
 

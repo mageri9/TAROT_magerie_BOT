@@ -14,6 +14,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./src:/app/src
+      - ./logs:/app/logs
 
   postgres:
     image: postgres:15
