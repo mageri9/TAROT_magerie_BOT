@@ -1,5 +1,5 @@
 from loguru import logger
-from ..crud import (
+from crud import (
     init_users_table,
     init_card_back_table,
     init_daily_cards_table,

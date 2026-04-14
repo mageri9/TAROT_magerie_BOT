@@ -1,4 +1,4 @@
-from ..core.db import db
+from core.db import db
 from datetime import datetime
 
 async def init_users_table():

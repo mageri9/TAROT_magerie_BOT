@@ -3,10 +3,10 @@ from aiogram.types import CallbackQuery, InputMediaPhoto
 
 import random
 
-from ...keyboards.user import open_card_actions_keyboard
+from keyboards.user import open_card_actions_keyboard
 
-from src.crud import get_card_by_id, get_random_card
-from src.crud import update_card_stats
+from crud import get_card_by_id, get_random_card
+from crud import update_card_stats
 
 router = Router()
 

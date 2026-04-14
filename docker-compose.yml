@@ -4,8 +4,11 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       DATABASE_URL: postgresql://bot_user:bot_pass@postgres:5432/tarot_bot
+      REDIS_URL: redis://redis:6379/0
     env_file:
       - .env
     restart: unless-stopped
@@ -30,5 +33,19 @@ services:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
 
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  redis_data:

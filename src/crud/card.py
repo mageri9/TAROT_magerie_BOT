@@ -1,4 +1,4 @@
-from ..core.db import db
+from core.db import db
 from datetime import date
 
 async def init_daily_cards_table():

@@ -1,4 +1,4 @@
-from ..crud import (
+from crud import (
     can_get_card,
     save_card_requests,
     get_card_back,

@@ -1,6 +1,5 @@
 import asyncpg
-
-from ..core.config import Settings
+from core.config import settings
 
 
 class DBConnect:
@@ -11,7 +10,6 @@ class DBConnect:
     async def connect(self):
         self.pool = await asyncpg.create_pool(self.db_url)
         return self.pool
-
 
     async def close(self):
         if self.pool:
@@ -30,5 +28,4 @@ class DBConnect:
             return await conn.fetchrow(query, *params)
 
 
-settings = Settings()
-db = DBConnect(settings.get_db_url())
+db = DBConnect(settings.DATABASE_URL)

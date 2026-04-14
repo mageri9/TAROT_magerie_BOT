@@ -1,4 +1,4 @@
-from ..core.db import db
+from core.db import db
 
 async def init_card_back_table():
     """Создает таблицу для хранения рубашки карт"""

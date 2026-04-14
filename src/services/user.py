@@ -1,4 +1,4 @@
-from ..crud import get_user, create_user
+from crud import get_user, create_user
 
 
 async def register_user(user_id: int, username: str = None):

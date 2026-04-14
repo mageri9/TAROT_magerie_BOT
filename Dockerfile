@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Добавляем корень проекта в PYTHONPATH
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/app/src
 
 # Копируем зависимости
 COPY requirements.txt .

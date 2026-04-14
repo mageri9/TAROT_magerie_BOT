@@ -4,7 +4,7 @@ from aiogram import BaseMiddleware
 from aiogram.types import Update
 from aiogram.dispatcher.event.bases import UNHANDLED
 from loguru import logger
-from src.keyboards.user import card_of_the_day
+from keyboards.user import card_of_the_day
 
 
 class RateLimitMiddleware(BaseMiddleware):

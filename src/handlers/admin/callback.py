@@ -5,9 +5,9 @@ from aiogram.types import CallbackQuery
 
 
 
-from ...filters.check_admin import IsAdmin
-from ...crud.card_back import get_all_card_backs, delete_card_back
-from ...keyboards.admin import get_admin_keyboard, get_cancel_keyboard, get_delete_back_keyboard
+from filters.check_admin import IsAdmin
+from crud.card_back import get_all_card_backs, delete_card_back
+from keyboards.admin import get_admin_keyboard, get_cancel_keyboard, get_delete_back_keyboard
 
 router = Router()
 

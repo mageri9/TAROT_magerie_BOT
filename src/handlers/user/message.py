@@ -4,11 +4,11 @@ from aiogram import Router, F, types
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 
-from src.crud import get_user_stats
+from crud import get_user_stats
 
-import src.services as srv
+import services as srv
 
-from ...keyboards.user import open_card_button, card_of_the_day
+from keyboards.user import open_card_button, card_of_the_day
 
 
 router = Router()

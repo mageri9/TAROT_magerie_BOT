@@ -1,9 +1,9 @@
 from aiogram import Router
 
-import src.handlers.user.message as user_message
-import src.handlers.user.callback as user_query
-import src.handlers.admin.message as admin_message
-import src.handlers.admin.callback as admin_query
+import handlers.user.message as user_message
+import handlers.user.callback as user_query
+import handlers.admin.message as admin_message
+import handlers.admin.callback as admin_query
 
 
 

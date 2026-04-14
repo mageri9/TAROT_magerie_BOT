@@ -1,4 +1,3 @@
-
 import html
 
 from aiogram import Router
@@ -6,9 +5,9 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from ...filters.check_admin import IsAdmin
-from ...crud.card_back import update_card_back, get_card_back
-from ...keyboards.admin import get_admin_keyboard, get_cancel_keyboard
+from filters.check_admin import IsAdmin
+from crud.card_back import update_card_back, get_card_back
+from keyboards.admin import get_admin_keyboard, get_cancel_keyboard
 from .callback import AdminStates
 
 router = Router()
