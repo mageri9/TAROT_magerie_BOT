@@ -5,8 +5,8 @@ from aiogram.types import CallbackQuery, FSInputFile
 
 import subprocess
 from pathlib import Path
-
 from loguru import logger
+from datetime import datetime
 
 from filters.check_admin import IsAdmin
 from crud.card_back import get_all_card_backs, delete_card_back
@@ -92,13 +92,6 @@ async def exit_admin_panel(callback: CallbackQuery, state: FSMContext):
     )
     await callback.answer()
 
-
-import subprocess
-from pathlib import Path
-from aiogram.types import FSInputFile
-from loguru import logger
-
-
 @router.callback_query(F.data == "admin:backup", IsAdmin())
 async def admin_backup(callback: CallbackQuery):
     """Ручной бэкап базы данных."""
@@ -111,7 +104,6 @@ async def admin_backup(callback: CallbackQuery):
         f"docker exec tarot_magerie_bot-postgres-1 "
         f"pg_dump -U bot_user tarot_bot | gzip > {backup_file}"
     )
-
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
 
     if result.returncode != 0:
@@ -128,8 +120,33 @@ async def admin_backup(callback: CallbackQuery):
         FSInputFile(backup_file),
         caption="✅ Бэкап готов"
     )
-
     backup_file.unlink(missing_ok=True)
+
+@router.callback_query(F.data == "admin:errors", IsAdmin())
+async def admin_errors(callback: CallbackQuery):
+    """Показать последние ошибки из лога"""
+    await callback.answer()
+
+    today = datetime.today().isoformat()
+    errors_file = Path(f"logs/errors_{today}.log")
+
+    if not errors_file.exists():
+        await callback.message.answer("✅ Ошибок сегодня нет")
+        return
+
+    with open(errors_file, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+    if not lines:
+        await callback.message.answer("✅ Ошибок сегодня нет")
+        return
+
+    last_error = lines[-10:]
+    text = "🔴 **Последние ошибки:**\n\n" + "".join(last_error)
+
+    if len(text) > 4000:
+        text = text[:4000] + "\n\n..."
+
+    await callback.message.answer(text[:4000])
 
 
 def register_handlers():
