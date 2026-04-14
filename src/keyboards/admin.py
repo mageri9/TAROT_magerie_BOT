@@ -11,7 +11,8 @@ def get_admin_keyboard() -> InlineKeyboardMarkup:
         ],
         [
             InlineKeyboardButton(text="📜 Ошибки", callback_data="admin:errors"),
-            InlineKeyboardButton(text="📦 Сделать бэкап", callback_data="admin:backup")
+            InlineKeyboardButton(text="📦 Сделать бэкап", callback_data="admin:backup"),
+            InlineKeyboardButton(text="📊 Статус", callback_data="admin:status")
         ],
             [InlineKeyboardButton(text="🚪 Выйти.", callback_data="admin:exit")]
     ]

@@ -3,13 +3,18 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import CallbackQuery, FSInputFile
 
+import time
+import psutil
 import subprocess
 from pathlib import Path
 from loguru import logger
-from datetime import datetime
+from datetime import date
 
+from core.db import db
+from core import redis
+
+from crud import get_total_users, get_new_users_today, get_all_card_backs, delete_card_back
 from filters.check_admin import IsAdmin
-from crud.card_back import get_all_card_backs, delete_card_back
 from keyboards.admin import get_admin_keyboard, get_cancel_keyboard, get_delete_back_keyboard
 
 router = Router()
@@ -127,8 +132,9 @@ async def admin_errors(callback: CallbackQuery):
     """Показать последние ошибки из лога"""
     await callback.answer()
 
-    today = datetime.today().isoformat()
-    errors_file = Path(f"logs/errors_{today}.log")
+    today = date.today().isoformat()
+    logs_dir = Path(__file__).parent.parent.parent.parent / "logs"
+    errors_file = logs_dir / f"errors_{today}.log"
 
     if not errors_file.exists():
         await callback.message.answer("✅ Ошибок сегодня нет")
@@ -148,6 +154,53 @@ async def admin_errors(callback: CallbackQuery):
 
     await callback.message.answer(text[:4000])
 
+@router.callback_query(F.data == "admin:status", IsAdmin())
+async def admin_status(callback: CallbackQuery):
+    """Показать статус бота и системы."""
+    await callback.answer()
+
+# 1. Пользователи
+    total_users = await get_total_users()
+    total_users = total_users[0] if total_users else 0
+
+    new_today = await get_new_users_today()
+    new_today = new_today[0] if new_today else 0
+
+# 2. Система
+    memory = psutil.virtual_memory()
+    mem_used_mb = memory.used // (1024 * 1024)
+    mem_total_mb = memory.total // (1024 * 1024)
+    mem_percent = memory.percent
+
+    bot_uptime = int(time.time() - psutil.Process().create_time())
+    hours = bot_uptime // 3600
+    minutes = (bot_uptime % 3600) // 60
+    uptime_str = f"{hours}ч {minutes}м"
+
+# 3. Статус сервисов
+    redis_status = "✅" if await redis.redis_client.ping() else "❌"
+    try:
+        await db.fetchone("SELECT 1")
+        db_status = "✅"
+    except:
+        db_status = "❌"
+
+    text = f"""
+📊 СТАТУС БОТА
+
+👥 Пользователи
+• Всего: {total_users}
+• Сегодня: {new_today}
+
+💾 Система
+• ОЗУ: {mem_used_mb} / {mem_total_mb} МБ ({mem_percent}%)
+• Аптайм: {uptime_str}
+
+🔴 Redis: {redis_status}
+🗄️ PostgreSQL: {db_status}
+"""
+
+    await callback.message.answer(text)
 
 def register_handlers():
     """Регистрируем обработчики колбэков админа"""

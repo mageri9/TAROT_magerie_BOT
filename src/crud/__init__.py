@@ -18,6 +18,8 @@ from .card_back import (
     get_card_back,
     update_card_back,
     init_card_back_table,
+    get_all_card_backs,
+    delete_card_back,
 )
 
 from .tarot import (
@@ -28,6 +30,10 @@ from .tarot import (
     get_total_cards_count,
 )
 
+from .admin import (
+    get_total_users,
+    get_new_users_today
+)
 
 __all__ = [
 #user
@@ -48,10 +54,15 @@ __all__ = [
     'get_card_back',
     'update_card_back',
     'init_card_back_table',
+    'get_all_card_backs',
+    'delete_card_back',
 # tarot
     'init_tarot_cards_table',
     'save_tarot_card',
     'get_random_card',
     'get_card_by_id',
     'get_total_cards_count',
+# admin
+    'get_total_users',
+    'get_new_users_today'
 ]
