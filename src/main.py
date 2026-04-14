@@ -48,7 +48,8 @@ async def main():
         config=config,
         bot_info=bot_info,
         db=db,
-        fsm_timeout=300
+        fsm_timeout=300,
+        redis_client = redis_client
     )
 
     dp.include_routers(router)

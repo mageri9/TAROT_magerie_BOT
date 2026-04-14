@@ -137,6 +137,23 @@ class RedisClient:
             "uptime_days": info.get("uptime_days"),
         }
 
+    async def increment(self, key: str) -> int:
+        """INCR + возврат нового значения."""
+        return await self._redis.incr(key)
+
+    async def lpush(self, key: str, value: str) -> None:
+        """LPUSH для списка."""
+        await self._redis.lpush(key, value)
+
+    async def lrange(self, key: str, start: int, end: int) -> list:
+        """LRANGE для списка."""
+        return await self._redis.lrange(key, start, end)
+
+    async def expire(self, key: str, ttl: int) -> None:
+        """Установить время жизни ключа в секундах."""
+        await self._redis.expire(key, ttl)
+
+
 redis_client = None
 
 def init_redis(url: str) -> RedisClient:
