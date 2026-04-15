@@ -161,10 +161,7 @@ async def admin_status(callback: CallbackQuery):
 
 # 1. Пользователи
     total_users = await get_total_users()
-    total_users = total_users[0] if total_users else 0
-
     new_today = await get_new_users_today()
-    new_today = new_today[0] if new_today else 0
 
 # 2. Система
     memory = psutil.virtual_memory()
