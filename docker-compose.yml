@@ -9,6 +9,7 @@ services:
     environment:
       DATABASE_URL: postgresql://bot_user:bot_pass@postgres:5432/tarot_bot
       REDIS_URL: redis://redis:6379/0
+      TZ: Europe/Moscow
     env_file:
       - .env
     command: sh -c "alembic upgrade head && python -m src.main"
@@ -17,6 +18,7 @@ services:
       - ./src:/app/src
       - ./logs:/app/logs
       - ./alembic.ini:/app/alembic.ini
+      - /etc/localtime:/etc/localtime:ro
 
   postgres:
     image: postgres:15
