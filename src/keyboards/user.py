@@ -11,12 +11,18 @@ def card_of_the_day():
 
 
 def open_card_actions_keyboard(card_id: int) -> InlineKeyboardMarkup:
-    """Клавиатура после открытия карты"""
+    """Клавиатура с кнопками Реролл и Оракул"""
     buttons = [
-        [InlineKeyboardButton(text="🔮 Можешь посмотреть ещё одну.\n"
-                                   " Я никому не скажу.",
-                              callback_data=f"reroll:{card_id}")]
+        [InlineKeyboardButton(text="✨ Можешь посмотреть ещё одну. ✨", callback_data=f"reroll:{card_id}")],
+        [InlineKeyboardButton(text="🔮 Толкование Оракула 🔮", callback_data=f"oracle:{card_id}")]
               ]
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+def oracle_only_keyboard(card_id: int) -> InlineKeyboardMarkup:
+    """Клавиатура только с Оракулом"""
+    buttons = [
+        [InlineKeyboardButton(text="🔮 Толкование Оракула 🔮", callback_data=f"oracle:{card_id}")]
+    ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 def open_card_button(card_id: int = None) -> InlineKeyboardMarkup:
@@ -30,6 +36,3 @@ def open_card_button(card_id: int = None) -> InlineKeyboardMarkup:
         [InlineKeyboardButton(text="🔮 Открыть", callback_data=callback_data)]
                   ]
     return InlineKeyboardMarkup(inline_keyboard=open_button)
-
-
-

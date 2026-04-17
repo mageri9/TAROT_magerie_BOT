@@ -1,9 +1,12 @@
 from aiogram import Router, F
-from aiogram.types import CallbackQuery, InputMediaPhoto
-
+from aiogram.types import CallbackQuery, InputMediaPhoto, InlineKeyboardMarkup
 import random
 
-from keyboards.user import open_card_actions_keyboard
+from loguru import logger
+
+from keyboards.user import open_card_actions_keyboard, oracle_only_keyboard
+
+from services import ask_oracle
 
 from crud import get_card_by_id, get_random_card
 from crud import update_card_stats
@@ -29,24 +32,20 @@ async def open_card(callback: CallbackQuery):
 
             if is_reversed:
                 meaning = meaning_reversed
-                position_text = " (перевёрнутая)"
+                position_text = " 🎴перевёрнутая "
             else:
                 meaning = meaning_direct
-                position_text = ""
+                position_text = "🃏"
 
             caption = f"✨ {card_name}{position_text} ✨\n\n{meaning}"
 
             await callback.message.edit_media(
-                                                InputMediaPhoto(
-                                                media=card_file_id,
-                                                caption=caption,
-                                                                ),
+                                            InputMediaPhoto(media=card_file_id, caption=caption,),
                                             reply_markup=open_card_actions_keyboard(card_id)
                                              )
             await callback.answer(f"✨ {card_name}!")
             return
 
-    # Если card_id нет или карта не найдена
     await callback.answer("❌ Карта не найдена")
 
 @router.callback_query(F.data.startswith("reroll"))
@@ -72,10 +71,10 @@ async def reroll_card(callback: CallbackQuery):
 
         if is_reversed:
             meaning = meaning_reversed or "Толкование в разработке"
-            position_text = " (перевёрнутая)"
+            position_text = " 🃏перевёрнутая "
         else:
             meaning = meaning_direct or "Толкование в разработке"
-            position_text = ""
+            position_text = "🃏"
 
         caption = (f"✨ {card_name}{position_text} ✨\n\n"
                    f"{meaning}\n\n"
@@ -85,15 +84,50 @@ async def reroll_card(callback: CallbackQuery):
 
     await callback.message.edit_media(
         InputMediaPhoto(media=card_file_id, caption=caption),
-        reply_markup=None
+        reply_markup=oracle_only_keyboard(card_id)
     )
 
     await callback.answer(f" {card_name}!")
 
+@router.callback_query(F.data.startswith("oracle:"))
+async def ask_oracle_handler(callback: CallbackQuery):
+    """Спросить Оракула о карте."""
+    card_id = int(callback.data.split(":")[1])
 
-@router.callback_query(F.data == "cancel")
-async def cancel_handler(query: CallbackQuery):
-    await query.message.edit_text('Operation canceled')
+    card = await get_card_by_id(card_id)
+    if not card:
+        await callback.answer("❌ Карта не найдена")
+        return
+
+    card_name = card[1]
+
+    caption = callback.message.caption or "🃏"
+    is_reversed = " 🎴перевёрнутая " in caption
+
+    await callback.answer("🔮 Оракул думает...")
+    msg = await callback.message.answer("🔮 Спрашиваю у звёзд...")
+
+    logger.info(f"Calling ask_oracle for: {card_name}")
+
+    oracle_answer = await ask_oracle(card_name, is_reversed)
+
+    await msg.edit_text(
+
+        f"🔮 Оракул говорит:\n\n"
+        f"{oracle_answer}"
+    )
+    current_markup = callback.message.reply_markup
+    new_markup = None
+    if current_markup:
+        new_rows = []
+        for row in current_markup.inline_keyboard:
+            new_buttons = [btn for btn in row if not btn.callback_data.startswith("oracle:")]
+            if new_buttons:
+                new_rows.append(new_buttons)
+        if new_rows:
+            new_markup = InlineKeyboardMarkup(inline_keyboard=new_rows)
+
+    await callback.message.edit_reply_markup(reply_markup=new_markup)
 
 
 def register_handlers():

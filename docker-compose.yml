@@ -19,6 +19,8 @@ services:
       - ./logs:/app/logs
       - ./alembic.ini:/app/alembic.ini
       - /etc/localtime:/etc/localtime:ro
+      - ./tarot-images.json:/app/tarot-images.json
+      - ./tarot_images:/app/tarot_images
 
   postgres:
     image: postgres:15

@@ -36,7 +36,7 @@ async def upload_deck():
     bot = Bot(token=settings.BOT_TOKEN)
     await db.connect()
 
-    await init_tarot_cards_table()
+    #await init_tarot_cards_table()
     print("✅ Таблица tarot_cards готова")
 
     json_path = Path("tarot-images.json")
@@ -85,8 +85,7 @@ async def upload_deck():
         count += 1
         print(f"✅ {count:2d}. ID={card_id:2d} | {card['name']}")
 
-    total = await get_total_cards_count()
-    print(f"\n🎉 Готово! В БД {total} карт")
+    print("\n🎉 Готово! Карты загружены")
 
     await db.close()
     await bot.session.close()

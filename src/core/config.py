@@ -16,6 +16,8 @@ class Settings(BaseSettings):
 
     REDIS_URL: str = "redis://localhost:6379/0"
 
+    AITUNNEL_API_KEY: str = ""
+
     class Config:
         env_file = get_env_path()
         env_file_encoding = "utf-8"
