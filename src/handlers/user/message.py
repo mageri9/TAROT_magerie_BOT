@@ -52,7 +52,7 @@ async def card_of_day(message: types.Message,  state: FSMContext):
 
     await message.answer_photo(
         card_back,
-        caption="✨ Можешь написать в чат, что тебя сегодня волнует.",
+        caption="✨ Напиши в чат, что тебя волнует. Оракул увидит это.",
         reply_markup=open_card_button(card_id)
                                 )
 
@@ -105,7 +105,7 @@ async def process_context(message: types.Message, state: FSMContext):
     context = message.text.strip()
 
     await redis_client.set(f"context:{user_id}", context, ttl=86400)
-    await message.answer("✨ Теперь открой карту, Оракул будет знать.")
+    await message.answer("✨ Оракул услышал тебя.")
 
     
 def register_handlers():

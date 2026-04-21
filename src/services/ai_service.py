@@ -16,7 +16,7 @@ client = AsyncOpenAI(
 
 DEFAULT_MODEL = "gemma-4-26b-a4b-it"
 
-async def ask_oracle(card_name: str, is_reversed: bool = False, model: str = DEFAULT_MODEL) -> str:
+async def ask_oracle(card_name: str, is_reversed: bool = False, context: str = "", db_meaning: str = "", model: str = DEFAULT_MODEL) -> str:
     """
     Спросить у AI-таролога о значении карты.
 """
@@ -30,12 +30,16 @@ async def ask_oracle(card_name: str, is_reversed: bool = False, model: str = DEF
         tone = "Толкование должно быть светлым, вдохновляющим и давать ощущение поддержки."
         question_type = "о возможностях, росте или о том, к чему стоит стремиться."
 
-        # 2. Улучшенный промпт, который учит модель разнообразию
+    if len(context) > 200:
+        context = context[:200] + "..."
+
     prompt = (
         f"Ты — таролог. Пользователю выпала карта «{card_name}» {position_text}. "
         f"{tone} "
-        f"Дай краткое (1-2 предложения) и полезное толкование на сегодня, строго соответствующее положению карты. "
-        f"Пиши простым, человеческим языком, без излишней поэзии и метафор. "
+        f"Официальное толкование карты: {db_meaning}. "
+        f"Контекст от пользователя: {context}. "
+        f"Дай краткое (1-2 предложения) и полезное толкование на сегодня. "
+        f"Пиши простым, человеческим языком, c небольшой долей поэзии и метафор. "
         f"В конце задай ОДИН короткий, но глубокий вопрос {question_type} "
         f"Вопрос должен быть уникальным для этой карты и её положения. Не используй markdown."
     )
@@ -51,8 +55,18 @@ async def ask_oracle(card_name: str, is_reversed: bool = False, model: str = DEF
             timeout=15.0
         )
 
-
         answer = response.choices[0].message.content
+
+        # Логируем использование токенов
+        if hasattr(response, 'usage') and response.usage:
+            logger.info(
+                f"📊 Tokens: prompt={response.usage.prompt_tokens}, completion={response.usage.completion_tokens}, total={response.usage.total_tokens}")
+        else:
+            # Fallback: грубая оценка (1 токен ~ 4 символа для русского)
+            prompt_chars = len(prompt)
+            answer_chars = len(answer) if answer else 0
+            logger.info(
+                f"📊 Estimated tokens: prompt~{prompt_chars // 4}, completion~{answer_chars // 4}, total~{(prompt_chars + answer_chars) // 4}")
 
         if not answer:
             logger.warning(f"Empty response from {model}")

@@ -1,12 +1,12 @@
 import random
 
 from aiogram import Router, F
-from aiogram.types import CallbackQuery, InputMediaPhoto, InlineKeyboardMarkup
 from aiogram.fsm.context import FSMContext
+from aiogram.types import CallbackQuery, InputMediaPhoto, InlineKeyboardMarkup
 
 from loguru import logger
 
-from keyboards.user import open_card_actions_keyboard, oracle_only_keyboard
+from keyboards.user import oracle_only_keyboard
 
 from services import ask_oracle
 
@@ -16,9 +16,8 @@ from crud import update_card_stats
 router = Router()
 
 @router.callback_query(F.data.startswith("open_card"))
-async def open_card(callback: CallbackQuery, state: FSMContext):
+async def open_card(callback: CallbackQuery):
     """Открыть карту по ID"""
-    await state.clear()
 
     user_id = callback.from_user.id
     parts = callback.data.split(":")
@@ -104,7 +103,7 @@ async def reroll_card(callback: CallbackQuery):
 
 
 @router.callback_query(F.data.startswith("oracle:"))
-async def ask_oracle_handler(callback: CallbackQuery):
+async def ask_oracle_handler(callback: CallbackQuery, state: FSMContext):
     """Спросить Оракула о карте."""
     card_id = int(callback.data.split(":")[1])
 
@@ -117,13 +116,25 @@ async def ask_oracle_handler(callback: CallbackQuery):
 
     caption = callback.message.caption or "🃏"
     is_reversed = " 🎴перевёрнутая " in caption
+    if is_reversed:
+        db_meaning = card[5]  # meaning_reversed
+    else:
+        db_meaning = card[4]  # meaning_direct
+
+    redis_client = callback.bot.custom.get("redis_client")
+
+    user_id = callback.from_user.id
+    context = None
+    if redis_client:
+        context = await redis_client.get(f"context:{user_id}")
+
+    await state.clear()
 
     await callback.answer("🔮 Оракул думает...")
     msg = await callback.message.answer("🔮 Спрашиваю у звёзд...")
-
     logger.info(f"Calling ask_oracle for: {card_name}")
 
-    oracle_answer = await ask_oracle(card_name, is_reversed)
+    oracle_answer = await ask_oracle(card_name, is_reversed, context, db_meaning)
 
     await msg.edit_text(
 
