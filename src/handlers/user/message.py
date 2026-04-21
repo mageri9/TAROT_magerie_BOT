@@ -1,5 +1,9 @@
 import html
 
+
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+
 from aiogram import Router, F, types
 from aiogram.filters import CommandStart
 from aiogram.types import Message
@@ -11,7 +15,12 @@ import services as srv
 from keyboards.user import open_card_button, card_of_the_day
 
 
+class CardContextState(StatesGroup):
+    waiting_for_context = State()
+
+
 router = Router()
+
 
 @router.message(CommandStart())
 async def start_handler(message: Message):
@@ -28,7 +37,7 @@ async def start_handler(message: Message):
                         )
 
 @router.message(F.text == '🔮 КАРТА ДНЯ 🔮')
-async def card_of_day(message: types.Message):
+async def card_of_day(message: types.Message,  state: FSMContext):
     """Обработчик кнопки '🔮 КАРТА ДНЯ 🔮'"""
     user_id = message.from_user.id
 
@@ -39,11 +48,15 @@ async def card_of_day(message: types.Message):
                              "Приходите завтра!")
         return
 
+    await state.update_data(card_id=card_id)
+
     await message.answer_photo(
         card_back,
-        caption="🔮 Попробуй отправить любое сообщение в чат.",
+        caption="✨ Можешь написать в чат, что тебя сегодня волнует.",
         reply_markup=open_card_button(card_id)
                                 )
+
+    await state.set_state(CardContextState.waiting_for_context)
 
 @router.message(F.text == "📜 ПРОФИЛЬ 📜")
 async def profile(message: Message):
@@ -70,14 +83,30 @@ async def profile(message: Message):
 @router.message(F.text == '❓ ПОМОЩЬ ❓')
 async def help_command(message: Message):
     await message.answer(
-        "🔮 **Что я умею:**\n"
-        "• Карта дня — нажми кнопку.\n"
+        "🔮 Что я умею:\n"
         "• Открой карту, чтобы узнать значение.\n"
+        "• Обратись к Оракулу.\n"
         "• У тебя есть шанс испытать удачу повторно.\n"
         "• Статистика — кнопка ПРОФИЛЬ.\n"
         "• Новая карта каждый день!\n\n"
         "📜 Если что-то сломалось — напиши @mageri9"
     )
+
+
+@router.message(CardContextState.waiting_for_context)
+async def process_context(message: types.Message, state: FSMContext):
+    redis_client = message.bot.custom.get("redis_client")
+
+    if not redis_client:
+        await message.answer("❌ Redis недоступен, попробуй позже")
+        return
+
+    user_id = message.from_user.id
+    context = message.text.strip()
+
+    await redis_client.set(f"context:{user_id}", context, ttl=86400)
+    await message.answer("✨ Теперь открой карту, Оракул будет знать.")
+
     
 def register_handlers():
     pass

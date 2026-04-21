@@ -42,6 +42,10 @@ async def main():
         logger.error("❌ Redis не отвечает!")
         sys.exit(1)
     logger.info("✅ Redis подключен")
+    bot.custom = {
+        "redis_client": redis_client,
+        "db": db
+    }
 
     dp = Dispatcher(
         storage=redis_client.storage,

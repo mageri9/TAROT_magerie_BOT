@@ -1,6 +1,8 @@
+import random
+
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, InputMediaPhoto, InlineKeyboardMarkup
-import random
+from aiogram.fsm.context import FSMContext
 
 from loguru import logger
 
@@ -14,8 +16,10 @@ from crud import update_card_stats
 router = Router()
 
 @router.callback_query(F.data.startswith("open_card"))
-async def open_card(callback: CallbackQuery):
+async def open_card(callback: CallbackQuery, state: FSMContext):
     """Открыть карту по ID"""
+    await state.clear()
+
     user_id = callback.from_user.id
     parts = callback.data.split(":")
     card_id = int(parts[1]) if len(parts) > 1 else None
