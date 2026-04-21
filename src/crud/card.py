@@ -96,3 +96,21 @@ async def add_card_to_history(user_id: int, card_id: int) -> None:
         "INSERT INTO user_card_history (user_id, card_id) VALUES ($1, $2)",
         (user_id, card_id)
     )
+
+async def reset_daily_card_limit(user_id: int) -> None:
+    """Сбросить лимит карты дня для пользователя."""
+    exists = await db.fetchone(
+        "SELECT 1 FROM user_cards WHERE user_id = $1",
+        (user_id,)
+    )
+
+    if exists:
+        await db.execute(
+            "UPDATE user_cards SET last_card_date = '2000-01-01' WHERE user_id = $1",
+            (user_id,)
+        )
+    else:
+        await db.execute(
+            "INSERT INTO user_cards (user_id, last_card_date) VALUES ($1, '2000-01-01')",
+            (user_id,)
+        )

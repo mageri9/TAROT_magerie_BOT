@@ -13,7 +13,7 @@ from datetime import date
 from core.db import db
 from core import redis
 
-from crud import get_total_users, get_new_users_today, get_all_card_backs, delete_card_back
+from crud import get_total_users, get_new_users_today, get_all_card_backs, delete_card_back, reset_daily_card_limit
 from filters.check_admin import IsAdmin
 from keyboards.admin import get_admin_keyboard, get_cancel_keyboard, get_delete_back_keyboard
 
@@ -198,6 +198,13 @@ async def admin_status(callback: CallbackQuery):
 """
 
     await callback.message.answer(text)
+
+@router.callback_query(F.data == "admin:reset_daily_card", IsAdmin())
+async def reset_daily_card(callback: CallbackQuery):
+    """Сбросить лимит карты дня для админа."""
+    await reset_daily_card_limit(callback.from_user.id)
+    await callback.answer("✅ Лимит сброшен")docker compose exec postgres psql -U bot_user -d tarot_bot -c "UPDATE tarot_cards SET meaning_reversed = 'Это карта финансовых пирамид и всяких схем быстрого обогащения. Кто-то получит свое (обычно вовсе не тот, кто больше нуждается в этом), а кто-то останется ни с чем. Незаконное присвоение денег, нетрудовые доходы. Иллюзорный выигрыш, который не удается с толком применить. Здесь чувствуется мотив «бездонной бочки» - вложений не хватает, деньги испаряются, помощи и зарплаты не хватает надолго. Типично для ситуации, когда затраты на содержание семьи начинают превосходить реальные доходы кормильца. Безнадежные долги, «плохие кредиты», неразумные инвестиции, спорные наследства, невыплаченная зарплата, вообще ненадежные финансовые дела также идут по этой карте. В старинных толковниках встречаются такие значения как иллюзии и подлог.' WHERE id = 69;"
+
 
 def register_handlers():
     """Регистрируем обработчики колбэков админа"""

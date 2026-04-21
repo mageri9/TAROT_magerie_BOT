@@ -13,6 +13,7 @@ from .card import (
     add_card_to_history,
     update_card_stats,
     get_user_stats,
+    reset_daily_card_limit,
 )
 from .card_back import (
     get_card_back,
@@ -50,6 +51,7 @@ __all__ = [
     'add_card_to_history',
     'update_card_stats',
     'get_user_stats',
+    'reset_daily_card_limit',
 #card_back
     'get_card_back',
     'update_card_back',
