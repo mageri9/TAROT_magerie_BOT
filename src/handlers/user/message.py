@@ -63,6 +63,7 @@ async def profile(message: Message):
     
     🃏: {upright}
     🎴: {reversed_}
+    
             """
     await message.answer(text)
 

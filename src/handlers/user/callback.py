@@ -41,12 +41,20 @@ async def open_card(callback: CallbackQuery):
 
             await callback.message.edit_media(
                                             InputMediaPhoto(media=card_file_id, caption=caption,),
-                                            reply_markup=open_card_actions_keyboard(card_id)
+                                            reply_markup=oracle_only_keyboard(card_id)
                                              )
             await callback.answer(f"✨ {card_name}!")
             return
 
     await callback.answer("❌ Карта не найдена")
+
+
+
+# =====================================================================
+# 🔄 REROLL — ВРЕМЕННО ОТКЛЮЧЕН (Релиз 1.5)
+#    Хендлер сохранён для будущих релизов.
+#    Клавиатура переключена на oracle_only_keyboard в open_card.
+#    Чтобы вернуть: заменить клавиатуру обратно.
 
 @router.callback_query(F.data.startswith("reroll"))
 async def reroll_card(callback: CallbackQuery):
@@ -88,6 +96,8 @@ async def reroll_card(callback: CallbackQuery):
     )
 
     await callback.answer(f" {card_name}!")
+# =====================================================================
+
 
 @router.callback_query(F.data.startswith("oracle:"))
 async def ask_oracle_handler(callback: CallbackQuery):
