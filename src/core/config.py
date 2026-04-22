@@ -14,7 +14,6 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///database/db.db"
     REDIS_URL: str = "redis://localhost:6379/0"
 
-
     AITUNNEL_API_KEY: str = ""
 
     AI_PRIMARY_MODEL: str = "gemma-4-26b-a4b-it"
@@ -29,6 +28,17 @@ class Settings(BaseSettings):
 
     AI_CACHE_TTL: int = 3600
     AI_CACHE_ENABLED: bool = True
+
+    @property
+    def pg_dump_cmd(self) -> str:
+        """Собрать команду pg_dump из DATABASE_URL."""
+        url = self.DATABASE_URL.replace("postgresql://", "")
+        user_pass, host_port_db = url.split("@")
+        user, password = user_pass.split(":")
+        host_port, db = host_port_db.split("/")
+        host = host_port.split(":")[0]
+
+        return f"PGPASSWORD={password} pg_dump -h {host} -U {user} -d {db}"
 
     class Config:
         env_file = get_env_path()

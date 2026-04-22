@@ -1,3 +1,4 @@
+import asyncio
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
@@ -5,11 +6,12 @@ from aiogram.types import CallbackQuery, FSInputFile
 
 import time
 import psutil
-import subprocess
+
 from pathlib import Path
 from loguru import logger
 from datetime import date
 
+from core.config import settings
 from core.db import db
 from core import redis
 from core.redis import get_redis
@@ -100,33 +102,66 @@ async def exit_admin_panel(callback: CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == "admin:backup", IsAdmin())
 async def admin_backup(callback: CallbackQuery):
-    """Ручной бэкап базы данных."""
+    """Асинхронный бэкап базы данных с защитой от повторного запуска."""
+    redis = get_redis()
+
+    # ========== Проверяем блокировку ==========
+    lock_key = "backup:lock"
+    if await redis.get(lock_key):
+        await callback.answer("❌ Бэкап уже выполняется!", show_alert=True)
+        return
+
+    await redis.set(lock_key, "1", ttl=60)
+
     await callback.answer("⏳ Создаю бэкап...")
+    msg = await callback.message.answer("🔄 Запускаю бэкап базы данных...")
     logger.info(f"Admin {callback.from_user.id} requested backup")
 
     backup_file = Path("/tmp/tarot_backup.sql.gz")
 
-    cmd = (
-        f"docker exec tarot_magerie_bot-postgres-1 "
-        f"pg_dump -U bot_user tarot_bot | gzip > {backup_file}"
-    )
-    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    # ========== Асинхронный вызов pg_dump ==========
 
-    if result.returncode != 0:
-        logger.error(f"Backup failed: {result.stderr}")
-        await callback.message.answer("❌ Ошибка создания бэкапа")
-        return
+    cmd = f"{settings.pg_dump_cmd} | gzip > /tmp/tarot_backup.sql.gz"
 
-    if not backup_file.exists() or backup_file.stat().st_size == 0:
-        logger.error("Backup file empty or missing")
-        await callback.message.answer("❌ Файл бэкапа пуст")
-        return
+    try:
+        process = await asyncio.create_subprocess_shell(
+            cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
 
-    await callback.message.answer_document(
-        FSInputFile(backup_file),
-        caption="✅ Бэкап готов"
-    )
-    backup_file.unlink(missing_ok=True)
+        stdout, stderr = await process.communicate()
+
+        if process.returncode != 0:
+            error_msg = stderr.decode() if stderr else "Unknown error"
+            logger.error(f"Backup failed: {error_msg}")
+            await msg.edit_text(f"❌ Ошибка создания бэкапа:\n{error_msg[:200]}")
+            return
+
+        if not backup_file.exists() or backup_file.stat().st_size == 0:
+            logger.error("Backup file empty or missing")
+            await msg.edit_text("❌ Файл бэкапа пуст")
+            return
+
+        # ========== Отправляем файл ==========
+
+        await msg.edit_text("✅ Бэкап готов, отправляю файл...")
+
+        await callback.message.answer_document(
+            FSInputFile(backup_file),
+            caption=f"✅ Бэкап готов\n📦 Размер: {backup_file.stat().st_size // 1024} КБ"
+        )
+
+        await msg.delete()
+        logger.info(f"Backup completed successfully, size: {backup_file.stat().st_size} bytes")
+
+    except Exception as e:
+        logger.error(f"Backup failed: {e}")
+        await msg.edit_text(f"❌ Ошибка: {str(e)[:200]}")
+
+    finally:
+        backup_file.unlink(missing_ok=True)
+        await redis.delete(lock_key)
 
 @router.callback_query(F.data == "admin:errors", IsAdmin())
 async def admin_errors(callback: CallbackQuery):
