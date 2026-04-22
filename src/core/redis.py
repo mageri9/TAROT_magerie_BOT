@@ -190,7 +190,7 @@ class RedisClient:
     #================== Cache ====================
 
     async def _get_oracle_cache_key(self, card_name: str, is_reversed: bool, context: str) -> str:
-        normalized = "".join(context.lower().split()) if context else ""
+        normalized = " ".join(context.lower().split()) if context else ""
         raw = f"{card_name}:{is_reversed}:{normalized}"
         hash_val = hashlib.md5(raw.encode()).hexdigest()[:12]
         return f"oracle:cache:{hash_val}"
@@ -203,7 +203,7 @@ class RedisClient:
         await self.set(key, response, ttl=ttl)
 
     async def get_cached_oracle_response(self, card_name: str, is_reversed: bool, context: str) -> str | None:
-        key = self._get_oracle_cache_key(card_name, is_reversed, context)
+        key = await self._get_oracle_cache_key(card_name, is_reversed, context)
         return await self.get(key)
 
     async def invalidate_oracle_cache(self, card_name: str = None, is_reversed: bool = None,
@@ -213,7 +213,7 @@ class RedisClient:
             if keys:
                 return await self._redis.delete(*keys)
             return 0
-        key = self._get_oracle_cache_key(card_name, is_reversed, context)
+        key = await self._get_oracle_cache_key(card_name, is_reversed, context)
         return await self._redis.delete(key)
 
 redis_client = None
