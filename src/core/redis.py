@@ -4,6 +4,7 @@ from aiogram.fsm.storage.redis import RedisStorage, DefaultKeyBuilder
 from typing import Optional
 import json
 import time
+import hashlib
 
 from core.config import settings
 
@@ -185,6 +186,35 @@ class RedisClient:
         """Сбросить circuit breaker."""
         await self._redis.delete(f"circuit:{model}:fails")
         await self._redis.delete(f"circuit:{model}:open")
+
+    #================== Cache ====================
+
+    async def _get_oracle_cache_key(self, card_name: str, is_reversed: bool, context: str) -> str:
+        normalized = "".join(context.lower().split()) if context else ""
+        raw = f"{card_name}:{is_reversed}:{normalized}"
+        hash_val = hashlib.md5(raw.encode()).hexdigest()[:12]
+        return f"oracle:cache:{hash_val}"
+
+    async def cache_oracle_response(self, card_name: str, is_reversed: bool, context: str, response: str, ttl: int = None) -> None:
+        if ttl is None:
+            from core.config import settings
+            ttl = settings.AI_CACHE_TTL
+        key = await self._get_oracle_cache_key(card_name, is_reversed, context)
+        await self.set(key, response, ttl=ttl)
+
+    async def get_cached_oracle_response(self, card_name: str, is_reversed: bool, context: str) -> str | None:
+        key = self._get_oracle_cache_key(card_name, is_reversed, context)
+        return await self.get(key)
+
+    async def invalidate_oracle_cache(self, card_name: str = None, is_reversed: bool = None,
+                                      context: str = None) -> int:
+        if card_name is None:
+            keys = await self._redis.keys("oracle:cache:*")
+            if keys:
+                return await self._redis.delete(*keys)
+            return 0
+        key = self._get_oracle_cache_key(card_name, is_reversed, context)
+        return await self._redis.delete(key)
 
 redis_client = None
 

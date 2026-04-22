@@ -5,46 +5,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from services.ai_service import ask_oracle
 
 
-class MockRedisClient:
-    """Мок Redis для тестов Circuit Breaker"""
-
-    def __init__(self):
-        self.data = {}
-        self.failures = {}
-        self.circuits = {}
-
-    async def is_circuit_open(self, model: str) -> bool:
-        return self.circuits.get(model, False)
-
-    async def record_failure(self, model: str) -> int:
-        self.failures[model] = self.failures.get(model, 0) + 1
-        return self.failures[model]
-
-    async def open_circuit(self, model: str) -> None:
-        self.circuits[model] = True
-
-    async def reset_circuit(self, model: str) -> None:
-        self.failures[model] = 0
-        self.circuits[model] = False
-
-
-@pytest.fixture
-def mock_redis():
-    return MockRedisClient()
-
-
-@pytest.fixture
-def mock_openai_success():
-    """Мок успешного ответа от OpenAI"""
-    mock_response = MagicMock()
-    mock_response.choices = [MagicMock()]
-    mock_response.choices[0].message.content = "✨ Тестовое предсказание ✨"
-    mock_response.usage.prompt_tokens = 100
-    mock_response.usage.completion_tokens = 50
-    mock_response.usage.total_tokens = 150
-    return mock_response
-
-
 # ========== ТЕСТЫ ==========
 
 @pytest.mark.asyncio

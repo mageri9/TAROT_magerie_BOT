@@ -14,7 +14,9 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///database/db.db"
     REDIS_URL: str = "redis://localhost:6379/0"
 
+
     AITUNNEL_API_KEY: str = ""
+
     AI_PRIMARY_MODEL: str = "gemma-4-26b-a4b-it"
     AI_FALLBACK_MODEL: str = "gemma-4-31b-it"
     AI_TIMEOUT: float = 5.0
@@ -24,6 +26,9 @@ class Settings(BaseSettings):
     AI_CIRCUIT_BREAKER_THRESHOLD: int = 3
     AI_CIRCUIT_BREAKER_WINDOW: int = 60
     AI_CIRCUIT_BREAKER_COOLDOWN: int = 120
+
+    AI_CACHE_TTL: int = 3600
+    AI_CACHE_ENABLED: bool = True
 
     class Config:
         env_file = get_env_path()

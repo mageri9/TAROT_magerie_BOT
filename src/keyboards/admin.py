@@ -14,7 +14,10 @@ def get_admin_keyboard() -> InlineKeyboardMarkup:
             InlineKeyboardButton(text="📦 Сделать бэкап", callback_data="admin:backup"),
             InlineKeyboardButton(text="📊 Статус", callback_data="admin:status")
         ],
-            [InlineKeyboardButton(text="🔄 Сбросить карту дня", callback_data="admin:reset_daily_card")],
+            [
+                InlineKeyboardButton(text="🧹 Очистить AI-кэш", callback_data="admin:clear_ai_cache"),
+                InlineKeyboardButton(text="🔄 Сбросить карту дня", callback_data="admin:reset_daily_card")
+            ],
             [InlineKeyboardButton(text="🚪 Выйти.", callback_data="admin:exit")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
