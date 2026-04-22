@@ -1,8 +1,12 @@
+from loguru import logger
 from redis.asyncio import Redis
 from aiogram.fsm.storage.redis import RedisStorage, DefaultKeyBuilder
 from typing import Optional
 import json
 import time
+
+from core.config import settings
+
 
 class RedisClient:
     """
@@ -72,9 +76,7 @@ class RedisClient:
         }, ensure_ascii=False)
 
         await self._redis.lpush(key, msg)
-
         await self._redis.ltrim(key, 0, 19)
-
         await self._redis.expire(key, 3600)
 
     async def get_chat_history(self, user_id: int, limit: int = 10) -> list[dict]:
@@ -153,6 +155,36 @@ class RedisClient:
         """Установить время жизни ключа в секундах."""
         await self._redis.expire(key, ttl)
 
+    # ========== CIRCUIT BREAKER ==========
+
+    async def record_failure(self, model: str) -> int:
+        """Записать ошибку модели. Возвращает текущее количество ошибок."""
+        key = f"circuit:{model}:fails"
+        count = await self._redis.incr(key)
+        await self._redis.expire(key, settings.AI_CIRCUIT_BREAKER_WINDOW)
+        return count
+
+    async def get_failures(self, model: str) -> int:
+        """Получить количество ошибок модели за окно."""
+        key = f"circuit:{model}:fails"
+        count = await self._redis.get(key)
+        return int(count) if count else 0
+
+    async def is_circuit_open(self, model: str) -> bool:
+        """Проверить, разомкнут ли circuit breaker для модели."""
+        key = f"circuit:{model}:open"
+        return await self._redis.exists(key) > 0
+
+    async def open_circuit(self, model: str) -> None:
+        """Разомкнуть circuit breaker (отключить модель)."""
+        key = f"circuit:{model}:open"
+        await self._redis.set(key, "1", ttl = settings.AI_CIRCUIT_BREAKER_COOLDOWN)
+        logger.warning(f"🔴 Circuit BREAKER OPEN for {model} ({settings.AI_CIRCUIT_BREAKER_COOLDOWN}s)")
+
+    async def reset_circuit(self, model: str) -> None:
+        """Сбросить circuit breaker."""
+        await self._redis.delete(f"circuit:{model}:fails")
+        await self._redis.delete(f"circuit:{model}:open")
 
 redis_client = None
 

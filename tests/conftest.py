@@ -1,3 +1,9 @@
+import sys
+from pathlib import Path
+
+root_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(root_dir))
+
 import pytest
 import asyncio
 from aiogram import Dispatcher
@@ -6,8 +12,8 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from src.core.db import db
 from src.database.init import init_all_tables
 from src.core.router_manager import setup_routers
-from tests.mocked_aiogram import MockedBot, MockedSession
 
+from mocked_aiogram import MockedBot, MockedSession
 
 @pytest.fixture
 async def test_db():

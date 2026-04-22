@@ -1,4 +1,6 @@
 import asyncio
+import hashlib
+
 from openai import AsyncOpenAI
 from loguru import logger
 
@@ -11,16 +13,22 @@ client = AsyncOpenAI(
     default_headers={
         "HTTP-Referer": "https://t.me/tarot_magerie_test_bot",
         "X-Title": "Tarot Magerie Bot"
-    }
+    },
+    max_retries=0,
+    timeout=settings.AI_TIMEOUT,
 )
 
-DEFAULT_MODEL = "gemma-4-26b-a4b-it"
 
-async def ask_oracle(card_name: str, is_reversed: bool = False, context: str = "", db_meaning: str = "", model: str = DEFAULT_MODEL) -> str:
-    """
-    Спросить у AI-таролога о значении карты.
-"""
+async def ask_oracle(
+        card_name: str,
+        is_reversed: bool = False,
+        context: str = "",
+        db_meaning: str = "",
+        redis_client=None
+) -> str:
+    """Спросить у AI-таролога о значении карты."""
 
+    # ========== промпт =======================================================================================
     if is_reversed:
         position_text = "в перевёрнутом положении"
         tone = "Толкование должно быть более мрачным, предупреждающим или указывать на препятствия и внутренние блоки."
@@ -43,51 +51,89 @@ async def ask_oracle(card_name: str, is_reversed: bool = False, context: str = "
         f"В конце задай ОДИН короткий, но глубокий вопрос {question_type} "
         f"Вопрос должен быть уникальным для этой карты и её положения. Не используй markdown."
     )
+    # ===========================================================================================================
 
-    try:
-        logger.info(f"🤖 Asking Oracle about: {card_name} ({position_text})")
+    models_to_try = []
 
-        response = await client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.9,
-            max_tokens=400,
-            timeout=15.0
-        )
+    primary_open = False
+    if redis_client:
+        primary_open = await redis_client.is_circuit_open(settings.AI_PRIMARY_MODEL)
 
-        answer = response.choices[0].message.content
+    if not primary_open:
+        models_to_try.append(settings.AI_PRIMARY_MODEL)
+    else:
+        logger.warning(f"⚠️ Circuit breaker open for {settings.AI_PRIMARY_MODEL}, skipping")
 
-        # Логируем использование токенов
-        if hasattr(response, 'usage') and response.usage:
-            logger.info(
-                f"📊 Tokens: prompt={response.usage.prompt_tokens}, completion={response.usage.completion_tokens}, total={response.usage.total_tokens}")
+    if settings.AI_FALLBACK_MODEL:
+        fallback_open = False
+        if redis_client:
+            fallback_open = await redis_client.is_circuit_open(settings.AI_FALLBACK_MODEL)
+        if not fallback_open:
+            models_to_try.append(settings.AI_FALLBACK_MODEL)
         else:
-            # Fallback: грубая оценка (1 токен ~ 4 символа для русского)
-            prompt_chars = len(prompt)
-            answer_chars = len(answer) if answer else 0
-            logger.info(
-                f"📊 Estimated tokens: prompt~{prompt_chars // 4}, completion~{answer_chars // 4}, total~{(prompt_chars + answer_chars) // 4}")
+            logger.warning(f"⚠️ Circuit breaker open for {settings.AI_FALLBACK_MODEL}, skipping")
 
-        if not answer:
-            logger.warning(f"Empty response from {model}")
-            return "🔮 Оракул сегодня немногословен. Попробуй другую карту."
+    if not models_to_try:
+        logger.error("❌ All models are disabled by circuit breaker")
+        return "🔮 Звёзды просят немного терпения. Попробуй позже."
 
-        logger.info(f"✨ Oracle answered: {answer[:50]}...")
-        return answer.strip()
+    last_error = None
 
-    except asyncio.TimeoutError:
-        logger.error("⏱️ Oracle timeout")
-        return "✨ Сегодня звезды медлят с ответом... Попробуй позже. ✨"
+    for attempt, model in enumerate(models_to_try):
+        try:
+            logger.info(f"🤖 Attempt {attempt+1}/{len(models_to_try)}: using {model}")
 
+            response = await client.chat.completions.create(
+                model=model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=settings.AI_TEMPERATURE,
+                max_tokens=settings.AI_MAX_TOKENS,
+                timeout=settings.AI_TIMEOUT
+            )
+            answer = response.choices[0].message.content
 
-    except Exception as e:
-        logger.error(f"❌ Oracle error: {e}")
+            # Логируем использование токенов
+            if hasattr(response, 'usage') and response.usage:
+                logger.info(f"📊 Tokens: prompt={response.usage.prompt_tokens}, "
+                    f"completion={response.usage.completion_tokens}, "
+                    f"total={response.usage.total_tokens}"
+                )
+            if not answer:
+                raise ValueError("Empty response from model")
 
-        if "429" in str(e):
-            return "🔮 Сегодня было много вопросов к звёздам. Дай отдохнуть и спроси снова."
+            if attempt == 0 and model == settings.AI_PRIMARY_MODEL:
+                logger.info(f"✅ Primary model {model} succeeded")
+                if redis_client:
+                    await redis_client.reset_circuit(model)
+            elif attempt > 0:
+                logger.warning(f"⚠️ Used fallback model: {model}")
 
-        elif "401" in str(e):
-            return "🔮 Оракул временно не может связаться с высшими силами. Мы работаем над этим."
+            return answer.strip()
 
-        else:
-            return "🔮 Оракул временно недоступен. Карты говорят, что всё наладится. 😉"
+        except asyncio.TimeoutError:
+            last_error = f"timeout after {settings.AI_TIMEOUT}s"
+            logger.warning(f"⏱️ Model {model} {last_error}")
+
+        except Exception as e:
+            last_error = str(e)
+            logger.error(f"❌ Model {model} failed: {type(e).__name__}: {e}")
+
+            if "401" in str(e) or "403" in str(e):
+                logger.error(f"🔐 Auth error for {model}, aborting fallback chain")
+                break
+
+        if redis_client:
+            failures = await redis_client.record_failure(model)
+            logger.warning(f"📊 Model {model} failures: {failures}/{settings.AI_CIRCUIT_BREAKER_THRESHOLD}")
+
+            if failures >= settings.AI_CIRCUIT_BREAKER_THRESHOLD:
+                await redis_client.open_circuit(model)
+
+    logger.error(f"❌ All models failed. Last error: {last_error}")
+    return "🔮 Оракул сегодня немногословен... Попробуй позже."
+
+def _get_cache_key(card_name: str, is_reversed: bool, context: str) -> str:
+    """Генерирует ключ для кэширования ответа AI."""
+    data = f"{card_name},{is_reversed},{context}"
+    hash_val = hashlib.md5(data.encode()).hexdigest()[:12]
+    return f"oracle:cache:{hash_val}"

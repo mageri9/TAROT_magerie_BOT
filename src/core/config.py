@@ -8,15 +8,22 @@ def get_env_path() -> Path:
 
 
 class Settings(BaseSettings):
+
     BOT_TOKEN: str
-
     ADMIN_IDS: list[int]
-
     DATABASE_URL: str = "sqlite:///database/db.db"
-
     REDIS_URL: str = "redis://localhost:6379/0"
 
     AITUNNEL_API_KEY: str = ""
+    AI_PRIMARY_MODEL: str = "gemma-4-26b-a4b-it"
+    AI_FALLBACK_MODEL: str = "gemma-4-31b-it"
+    AI_TIMEOUT: float = 5.0
+    AI_MAX_TOKENS: int = 400
+    AI_TEMPERATURE: float = 0.9
+
+    AI_CIRCUIT_BREAKER_THRESHOLD: int = 3
+    AI_CIRCUIT_BREAKER_WINDOW: int = 60
+    AI_CIRCUIT_BREAKER_COOLDOWN: int = 120
 
     class Config:
         env_file = get_env_path()

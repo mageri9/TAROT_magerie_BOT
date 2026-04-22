@@ -134,7 +134,13 @@ async def ask_oracle_handler(callback: CallbackQuery, state: FSMContext):
     msg = await callback.message.answer("🔮 Спрашиваю у звёзд...")
     logger.info(f"Calling ask_oracle for: {card_name}")
 
-    oracle_answer = await ask_oracle(card_name, is_reversed, context, db_meaning)
+    oracle_answer = await ask_oracle(
+        card_name=card_name,
+        is_reversed=is_reversed,
+        context=context,
+        db_meaning=db_meaning,
+        redis_client=redis_client
+    )
 
     await msg.edit_text(
 
