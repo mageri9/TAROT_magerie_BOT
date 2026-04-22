@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from services.ai_service import ask_oracle
 
+from core.redis import get_redis
 
 # ========== ТЕСТЫ ==========
 

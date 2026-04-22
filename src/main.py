@@ -37,15 +37,11 @@ async def main():
     await db.connect()
 
     redis_client = init_redis(config.REDIS_URL)
-
     if not await redis_client.ping():
         logger.error("❌ Redis не отвечает!")
         sys.exit(1)
     logger.info("✅ Redis подключен")
-    bot.custom = {
-        "redis_client": redis_client,
-        "db": db
-    }
+    bot.custom = {"db": db}
 
     dp = Dispatcher(
         storage=redis_client.storage,

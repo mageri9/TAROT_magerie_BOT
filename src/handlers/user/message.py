@@ -8,6 +8,7 @@ from aiogram import Router, F, types
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 
+from core.redis import get_redis
 from crud import get_user_stats
 
 import services as srv
@@ -95,7 +96,7 @@ async def help_command(message: Message):
 
 @router.message(CardContextState.waiting_for_context)
 async def process_context(message: types.Message, state: FSMContext):
-    redis_client = message.bot.custom.get("redis_client")
+    redis_client = get_redis()
 
     if not redis_client:
         await message.answer("❌ Redis недоступен, попробуй позже")

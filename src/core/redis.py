@@ -216,9 +216,18 @@ class RedisClient:
         key = await self._get_oracle_cache_key(card_name, is_reversed, context)
         return await self._redis.delete(key)
 
-redis_client = None
+# ========== GLOBAL SINGLETON ==========
+
+_redis_client: RedisClient | None = None
+
+def get_redis() -> RedisClient:
+    """Получить глобальный экземпляр Redis."""
+    if _redis_client is None:
+        raise RuntimeError("Redis not initialized. Call init_redis() first.")
+    return _redis_client
 
 def init_redis(url: str) -> RedisClient:
-    global redis_client
-    redis_client = RedisClient(url)
-    return redis_client
+    """Инициализировать глобальный экземпляр Redis."""
+    global _redis_client
+    _redis_client = RedisClient(url)
+    return _redis_client

@@ -5,7 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InputMediaPhoto, InlineKeyboardMarkup
 
 from loguru import logger
-
+from core.redis import get_redis
 from keyboards.user import oracle_only_keyboard
 
 from services import ask_oracle
@@ -121,7 +121,7 @@ async def ask_oracle_handler(callback: CallbackQuery, state: FSMContext):
     else:
         db_meaning = card[4]  # meaning_direct
 
-    redis_client = callback.bot.custom.get("redis_client")
+    redis_client = get_redis()
 
     user_id = callback.from_user.id
     context = None

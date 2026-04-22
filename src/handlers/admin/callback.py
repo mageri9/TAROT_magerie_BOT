@@ -12,7 +12,7 @@ from datetime import date
 
 from core.db import db
 from core import redis
-from core.redis import redis_client
+from core.redis import get_redis
 
 from crud import get_total_users, get_new_users_today, get_all_card_backs, delete_card_back, reset_daily_card_limit
 from filters.check_admin import IsAdmin
@@ -208,7 +208,7 @@ async def reset_daily_card(callback: CallbackQuery):
 
 @router.callback_query(F.data == "admin:clear_ai_cache", IsAdmin())
 async def clear_ai_cache(callback: CallbackQuery):
-    redis_client = callback.bot.custom.get("redis_client")
+    redis_client = get_redis()
     if not redis_client:
         await callback.answer("❌ Redis недоступен", show_alert=True)
         return

@@ -4,6 +4,8 @@ from aiogram import BaseMiddleware
 from aiogram.types import Update
 from aiogram.dispatcher.event.bases import UNHANDLED
 from loguru import logger
+
+from core.redis import get_redis
 from keyboards.user import card_of_the_day
 
 
@@ -57,7 +59,7 @@ class RateLimitMiddleware(BaseMiddleware):
             event: Update,
             data: Dict[str, Any]
     ) -> Any:
-        redis_client = data.get("redis_client")
+        redis_client = get_redis()
         if not redis_client:
             return await handler(event, data)
 
