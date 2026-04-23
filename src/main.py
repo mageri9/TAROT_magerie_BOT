@@ -8,6 +8,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
+from core.sentry_init import init_sentry
 from filters.chat_type import ChatTypeFilter
 
 from core.router_manager import setup_routers
@@ -19,10 +20,12 @@ from core.redis import init_redis
 from middlewares.error_handler import ErrorHandlerMiddleware
 from middlewares.logger import LoggerMiddleware
 from middlewares.rate_limit import RateLimitMiddleware
+from middlewares.sentry import SentryMiddleware
 
 
 async def main():
     setup_logging()
+    init_sentry()
 
     environ['TZ'] = 'Europe/Moscow'
 
@@ -54,8 +57,9 @@ async def main():
 
     dp.include_routers(router)
 
-    dp.update.middleware(RateLimitMiddleware())
+    dp.update.middleware(SentryMiddleware())
     dp.update.middleware(ErrorHandlerMiddleware())
+    dp.update.middleware(RateLimitMiddleware())
     dp.update.outer_middleware(LoggerMiddleware())
 
     dp.message.filter(ChatTypeFilter(chat_type=["private"]))

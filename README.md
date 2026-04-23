@@ -23,7 +23,7 @@
 - 🔌 Singleton-клиент Redis, упрощённая DI и тестирование
 - 🐳 Полный `docker-compose` стек: бот + Postgres + Redis
 - 🧪 40+ `pytest`-тестов, линтеры, CI/CD через GitHub Actions
-
+- 📈 Sentry — отслеживание ошибок в реальном времени
 ---
 
 ## 🏗️ Стек и архитектура
@@ -139,10 +139,7 @@ src/
 pip install -r requirements-dev.txt
 
 # Запуск тестов
-pytest tests/ -v --cov=.
-
-# Линтеры
-ruff check . && black .
+pytest tests/ -v 
 
 # Локальный запуск (без Docker)
  Не получится)

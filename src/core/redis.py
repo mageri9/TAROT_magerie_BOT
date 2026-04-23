@@ -190,12 +190,16 @@ class RedisClient:
     #================== Cache ====================
 
     async def _get_oracle_cache_key(self, card_name: str, is_reversed: bool, context: str) -> str:
+        """Генерирует детерминированный ключ для кэширования ответа Оракула.
+            Нормализует контекст (нижний регистр, один пробел между словами),
+            хэширует через MD5 и возвращает ключ вида oracle:cache:{hash}."""
         normalized = " ".join(context.lower().split()) if context else ""
         raw = f"{card_name}:{is_reversed}:{normalized}"
         hash_val = hashlib.md5(raw.encode()).hexdigest()[:12]
         return f"oracle:cache:{hash_val}"
 
     async def cache_oracle_response(self, card_name: str, is_reversed: bool, context: str, response: str, ttl: int = None) -> None:
+        """Сохраняет ответ Оракула в кэш Redis."""
         if ttl is None:
             from core.config import settings
             ttl = settings.AI_CACHE_TTL
@@ -203,11 +207,14 @@ class RedisClient:
         await self.set(key, response, ttl=ttl)
 
     async def get_cached_oracle_response(self, card_name: str, is_reversed: bool, context: str) -> str | None:
+        """Получает ответ Оракула из кэша Redis."""
         key = await self._get_oracle_cache_key(card_name, is_reversed, context)
         return await self.get(key)
 
     async def invalidate_oracle_cache(self, card_name: str = None, is_reversed: bool = None,
                                       context: str = None) -> int:
+        """Если card_name не указан — удаляет ВСЕ ключи oracle:cache:*.
+            Если указан — удаляет только конкретный ключ."""
         if card_name is None:
             keys = await self._redis.keys("oracle:cache:*")
             if keys:

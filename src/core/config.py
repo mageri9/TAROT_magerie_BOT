@@ -11,8 +11,8 @@ class Settings(BaseSettings):
 
     BOT_TOKEN: str
     ADMIN_IDS: list[int]
-    DATABASE_URL: str = "sqlite:///database/db.db"
-    REDIS_URL: str = "redis://localhost:6379/0"
+    DATABASE_URL: str
+    REDIS_URL: str
 
     AITUNNEL_API_KEY: str = ""
 
@@ -28,6 +28,10 @@ class Settings(BaseSettings):
 
     AI_CACHE_TTL: int = 3600
     AI_CACHE_ENABLED: bool = True
+
+    SENTRY_DSN: str = ""
+    SENTRY_ENVIRONMENT: str = "development"
+    SENTRY_TRACES_SAMPLE_RATE: float = 0.3
 
     @property
     def pg_dump_cmd(self) -> str:
