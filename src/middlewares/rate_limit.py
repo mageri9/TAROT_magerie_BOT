@@ -120,9 +120,6 @@ class RateLimitMiddleware(BaseMiddleware):
         # === 3. Нормальный проход ===
         result = await handler(event, data)
 
-        # === 4. Восстановление клавиатуры ===
-        await self._restore_keyboard(event)
-
         return result
 
     @staticmethod
@@ -148,18 +145,3 @@ class RateLimitMiddleware(BaseMiddleware):
         elif event.callback_query:
             await event.callback_query.answer(text, show_alert=True)
 
-    @staticmethod
-    async def _restore_keyboard(event: Update):
-        if not event.message:
-            return
-
-        text = event.message.text
-        if text and text not in ["/start", "/menu", "🔮 КАРТА ДНЯ 🔮", "📜 ПРОФИЛЬ 📜", "❓ ПОМОЩЬ ❓", "/admin"]:
-            try:
-                await event.message.answer(
-                    "🔮",
-                    reply_markup=card_of_the_day(),
-                    disable_notification=True
-                )
-            except Exception:
-                pass
