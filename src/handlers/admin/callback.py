@@ -13,7 +13,6 @@ from datetime import date
 
 from core.config import settings
 from core.db import db
-from core import redis
 from core.redis import get_redis
 
 from crud import get_total_users, get_new_users_today, get_all_card_backs, delete_card_back, reset_daily_card_limit
@@ -190,28 +189,31 @@ async def admin_errors(callback: CallbackQuery):
 
     await callback.message.answer(text[:4000])
 
+
 @router.callback_query(F.data == "admin:status", IsAdmin())
 async def admin_status(callback: CallbackQuery):
-    """Показать статус бота и системы."""
     await callback.answer()
 
-# 1. Пользователи
+    redis = get_redis()
+
     total_users = await get_total_users()
     new_today = await get_new_users_today()
 
-# 2. Система
     memory = psutil.virtual_memory()
     mem_used_mb = memory.used // (1024 * 1024)
     mem_total_mb = memory.total // (1024 * 1024)
-    mem_percent = memory.percent
 
     bot_uptime = int(time.time() - psutil.Process().create_time())
     hours = bot_uptime // 3600
     minutes = (bot_uptime % 3600) // 60
     uptime_str = f"{hours}ч {minutes}м"
 
-# 3. Статус сервисов
-    redis_status = "✅" if await redis.redis_client.ping() else "❌"
+    try:
+        redis_ping = await redis.ping()
+        redis_status = "✅" if redis_ping else "❌"
+    except:
+        redis_status = "❌"
+
     try:
         await db.fetchone("SELECT 1")
         db_status = "✅"
@@ -226,13 +228,12 @@ async def admin_status(callback: CallbackQuery):
 • Сегодня: {new_today}
 
 💾 Система
-• ОЗУ: {mem_used_mb} / {mem_total_mb} МБ ({mem_percent}%)
+• ОЗУ: {mem_used_mb} / {mem_total_mb} МБ ({memory.percent}%)
 • Аптайм: {uptime_str}
 
 🔴 Redis: {redis_status}
 🗄️ PostgreSQL: {db_status}
 """
-
     await callback.message.answer(text)
 
 @router.callback_query(F.data == "admin:reset_daily_card", IsAdmin())
