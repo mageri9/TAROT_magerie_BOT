@@ -127,6 +127,8 @@ async def ask_oracle_handler(callback: CallbackQuery, state: FSMContext):
     context = None
     if redis_client:
         context = await redis_client.get(f"context:{user_id}")
+        if context:
+            await redis_client.delete(f"context:{user_id}")
 
     await state.clear()
 
