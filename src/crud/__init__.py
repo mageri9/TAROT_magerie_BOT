@@ -33,7 +33,8 @@ from .tarot import (
 
 from .admin import (
     get_total_users,
-    get_new_users_today
+    get_new_users_today,
+    get_active_users_today,
 )
 
 __all__ = [
@@ -66,5 +67,6 @@ __all__ = [
     'get_total_cards_count',
 # admin
     'get_total_users',
-    'get_new_users_today'
+    'get_new_users_today',
+    'get_active_users_today'
 ]

@@ -15,7 +15,7 @@ from core.config import settings
 from core.db import db
 from core.redis import get_redis
 
-from crud import get_total_users, get_new_users_today, get_all_card_backs, delete_card_back, reset_daily_card_limit
+from crud import get_total_users, get_new_users_today, get_all_card_backs, delete_card_back, reset_daily_card_limit, get_active_users_today
 from filters.check_admin import IsAdmin
 from keyboards.admin import get_admin_keyboard, get_cancel_keyboard, get_delete_back_keyboard
 
@@ -198,6 +198,7 @@ async def admin_status(callback: CallbackQuery):
 
     total_users = await get_total_users()
     new_today = await get_new_users_today()
+    active_today = await get_active_users_today()
 
     memory = psutil.virtual_memory()
     mem_used_mb = memory.used // (1024 * 1024)
@@ -226,6 +227,7 @@ async def admin_status(callback: CallbackQuery):
 👥 Пользователи
 • Всего: {total_users}
 • Сегодня: {new_today}
+• Активных: {active_today}
 
 💾 Система
 • ОЗУ: {mem_used_mb} / {mem_total_mb} МБ ({memory.percent}%)

@@ -14,3 +14,11 @@ async def get_new_users_today() -> int:
         (f"{today}%",)
     )
     return result[0] if result else 0
+
+async def get_active_users_today() -> int:
+    today = date.today().isoformat()
+    result = await db.fetchone(
+        "SELECT COUNT(DISTINCT user_id) FROM user_cards WHERE last_card_date = $1",
+        (today,)
+    )
+    return result[0] if result else 0
