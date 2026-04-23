@@ -1,5 +1,5 @@
 import html
-
+import asyncio
 
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -105,8 +105,30 @@ async def process_context(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     context = message.text.strip()
 
-    await redis_client.set(f"context:{user_id}", context, ttl=86400)
-    await message.answer("✨ Оракул услышал тебя.")
+    if not context:
+        await message.answer("✨ Напиши мысль или вопрос, который тебя волнует.")
+        return
+
+    if len(context) > 200:
+        last_space = context.rfind(" ", 0, 200)
+        if last_space > 0:
+            context = context[:last_space] + "..."
+        else:
+            context = context[:200] + "..."
+
+    await redis_client.set(f"context:{user_id}", context, ttl=600)
+
+    try:
+        await message.delete()
+    except Exception:
+        pass
+
+    msg = await message.answer("✨ Оракул услышал. ✨")
+    await asyncio.sleep(2)
+    try:
+        await msg.delete()
+    except Exception:
+        pass
 
     
 def register_handlers():
