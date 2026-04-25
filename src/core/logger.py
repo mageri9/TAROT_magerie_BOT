@@ -1,6 +1,8 @@
 import sys
 from pathlib import Path
+
 from loguru import logger
+
 
 def setup_logging():
     """Настройки логирования в файлы и консоль."""
@@ -16,7 +18,7 @@ def setup_logging():
         retention="7 days",
         compression="gz",
         level="DEBUG",
-        encoding="utf-8"
+        encoding="utf-8",
     )
 
     # Файл только для ошибок
@@ -25,7 +27,7 @@ def setup_logging():
         rotation="00:00",
         retention="14 days",
         level="ERROR",
-        encoding="utf-8"
+        encoding="utf-8",
     )
 
     # Консоль

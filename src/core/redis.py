@@ -1,29 +1,29 @@
-from loguru import logger
-from redis.asyncio import Redis
-from aiogram.fsm.storage.redis import RedisStorage, DefaultKeyBuilder
-from typing import Optional
+import hashlib
 import json
 import time
-import hashlib
+from typing import Optional
+
+from aiogram.fsm.storage.redis import DefaultKeyBuilder, RedisStorage
+from loguru import logger
+from redis.asyncio import Redis
 
 from core.config import settings
 
 
 class RedisClient:
     """
-        Обёртка над Redis для удобной работы.
-        Предоставляет:
-        - storage для FSM (aiogram)
-        - методы для кэша
-        - методы для AI-памяти
-        - методы для блокировок
+    Обёртка над Redis для удобной работы.
+    Предоставляет:
+    - storage для FSM (aiogram)
+    - методы для кэша
+    - методы для AI-памяти
+    - методы для блокировок
     """
 
-    def __init__(self, url: str = 'redis://localhost:6379/0'):
+    def __init__(self, url: str = "redis://localhost:6379/0"):
         self._redis = Redis.from_url(url, decode_responses=True)
         self.storage = RedisStorage(
-            redis=self._redis,
-            key_builder=DefaultKeyBuilder(prefix='tarot_fsm', separator=":")
+            redis=self._redis, key_builder=DefaultKeyBuilder(prefix="tarot_fsm", separator=":")
         )
 
     async def set(self, key: str, value: str, ttl: Optional[int] = None) -> None:
@@ -41,7 +41,6 @@ class RedisClient:
     async def exists(self, key: str) -> bool:
         """Проверить, существует ли ключ."""
         return await self._redis.exists(key) > 0
-
 
     async def set_json(self, key: str, data: dict, ttl: Optional[int] = None) -> None:
         """Сохранить словарь как JSON-строку."""
@@ -64,17 +63,14 @@ class RedisClient:
         """Сбросить кэш карты."""
         await self.delete(f"card:{card_id}")
 
-
     async def add_chat_message(self, user_id: int, role: str, content: str) -> None:
         """Добавить сообщение в историю диалога с AI.
-            Используется для команды /chat."""
+        Используется для команды /chat."""
         key = f"chat_history:{user_id}"
 
-        msg = json.dumps({
-            "role": role,
-            "content": content,
-            "timestamp": time.time()
-        }, ensure_ascii=False)
+        msg = json.dumps(
+            {"role": role, "content": content, "timestamp": time.time()}, ensure_ascii=False
+        )
 
         await self._redis.lpush(key, msg)
         await self._redis.ltrim(key, 0, 19)
@@ -90,7 +86,6 @@ class RedisClient:
     async def clear_chat_history(self, user_id: int) -> None:
         """Очистить историю диалога."""
         await self._redis.delete(f"chat_history:{user_id}")
-
 
     async def increment_rate(self, user_id: int, window: int = 60) -> int:
         """Увеличить счётчик запросов пользователя. Используется для защиты от спама."""
@@ -108,7 +103,6 @@ class RedisClient:
         count = await self._redis.get(key)
         return int(count) if count else 0
 
-
     async def acquire_lock(self, user_id: int, lock_name: str, ttl: int = 30) -> bool:
         """Захватить блокировку.
         Используется, чтобы пользователь не мог запустить два платных расклада одновременно."""
@@ -121,7 +115,6 @@ class RedisClient:
     async def release_lock(self, user_id: int, lock_name: str) -> None:
         """Освободить блокировку."""
         await self._redis.delete(f"lock:{user_id}:{lock_name}")
-
 
     async def ping(self) -> bool:
         """Проверить соединение Redis при старте бота."""
@@ -179,42 +172,50 @@ class RedisClient:
     async def open_circuit(self, model: str) -> None:
         """Разомкнуть circuit breaker (отключить модель)."""
         key = f"circuit:{model}:open"
-        await self._redis.set(key, "1", ttl = settings.AI_CIRCUIT_BREAKER_COOLDOWN)
-        logger.warning(f"🔴 Circuit BREAKER OPEN for {model} ({settings.AI_CIRCUIT_BREAKER_COOLDOWN}s)")
+        await self._redis.set(key, "1", ttl=settings.AI_CIRCUIT_BREAKER_COOLDOWN)
+        logger.warning(
+            f"🔴 Circuit BREAKER OPEN for {model} ({settings.AI_CIRCUIT_BREAKER_COOLDOWN}s)"
+        )
 
     async def reset_circuit(self, model: str) -> None:
         """Сбросить circuit breaker."""
         await self._redis.delete(f"circuit:{model}:fails")
         await self._redis.delete(f"circuit:{model}:open")
 
-    #================== Cache ====================
+    # ================== Cache ====================
 
     async def _get_oracle_cache_key(self, card_name: str, is_reversed: bool, context: str) -> str:
         """Генерирует детерминированный ключ для кэширования ответа Оракула.
-            Нормализует контекст (нижний регистр, один пробел между словами),
-            хэширует через MD5 и возвращает ключ вида oracle:cache:{hash}."""
+        Нормализует контекст (нижний регистр, один пробел между словами),
+        хэширует через MD5 и возвращает ключ вида oracle:cache:{hash}."""
         normalized = " ".join(context.lower().split()) if context else ""
         raw = f"{card_name}:{is_reversed}:{normalized}"
         hash_val = hashlib.md5(raw.encode()).hexdigest()[:12]
         return f"oracle:cache:{hash_val}"
 
-    async def cache_oracle_response(self, card_name: str, is_reversed: bool, context: str, response: str, ttl: int = None) -> None:
+    async def cache_oracle_response(
+        self, card_name: str, is_reversed: bool, context: str, response: str, ttl: int = None
+    ) -> None:
         """Сохраняет ответ Оракула в кэш Redis."""
         if ttl is None:
             from core.config import settings
+
             ttl = settings.AI_CACHE_TTL
         key = await self._get_oracle_cache_key(card_name, is_reversed, context)
         await self.set(key, response, ttl=ttl)
 
-    async def get_cached_oracle_response(self, card_name: str, is_reversed: bool, context: str) -> str | None:
+    async def get_cached_oracle_response(
+        self, card_name: str, is_reversed: bool, context: str
+    ) -> str | None:
         """Получает ответ Оракула из кэша Redis."""
         key = await self._get_oracle_cache_key(card_name, is_reversed, context)
         return await self.get(key)
 
-    async def invalidate_oracle_cache(self, card_name: str = None, is_reversed: bool = None,
-                                      context: str = None) -> int:
+    async def invalidate_oracle_cache(
+        self, card_name: str = None, is_reversed: bool = None, context: str = None
+    ) -> int:
         """Если card_name не указан — удаляет ВСЕ ключи oracle:cache:*.
-            Если указан — удаляет только конкретный ключ."""
+        Если указан — удаляет только конкретный ключ."""
         if card_name is None:
             keys = await self._redis.keys("oracle:cache:*")
             if keys:
@@ -223,15 +224,18 @@ class RedisClient:
         key = await self._get_oracle_cache_key(card_name, is_reversed, context)
         return await self._redis.delete(key)
 
+
 # ========== GLOBAL SINGLETON ==========
 
 _redis_client: RedisClient | None = None
+
 
 def get_redis() -> RedisClient:
     """Получить глобальный экземпляр Redis."""
     if _redis_client is None:
         raise RuntimeError("Redis not initialized. Call init_redis() first.")
     return _redis_client
+
 
 def init_redis(url: str) -> RedisClient:
     """Инициализировать глобальный экземпляр Redis."""

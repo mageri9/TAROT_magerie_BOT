@@ -1,12 +1,12 @@
 import asyncio
-from typing import Callable, Dict, Any
+from typing import Any, Callable, Dict
+
 from aiogram import BaseMiddleware
-from aiogram.types import Update
 from aiogram.dispatcher.event.bases import UNHANDLED
+from aiogram.types import Update
 from loguru import logger
 
 from core.redis import get_redis
-
 
 
 class RateLimitMiddleware(BaseMiddleware):
@@ -36,14 +36,15 @@ class RateLimitMiddleware(BaseMiddleware):
     восстанавливается основная клавиатура с кнопками:
     🔮 КАРТА ДНЯ | 📜 ПРОФИЛЬ | ❓ ПОМОЩЬ
     """
+
     def __init__(
-            self,
-            short_interval: float = 1.0,
-            short_max_violations: int = 3,
-            short_block: int = 30,
-            long_limit: int = 10,
-            long_window: int = 60,
-            long_block: int = 300
+        self,
+        short_interval: float = 1.0,
+        short_max_violations: int = 3,
+        short_block: int = 30,
+        long_limit: int = 10,
+        long_window: int = 60,
+        long_block: int = 300,
     ):
         super().__init__()
         self.short_interval = short_interval
@@ -53,12 +54,7 @@ class RateLimitMiddleware(BaseMiddleware):
         self.long_window = long_window
         self.long_block = long_block
 
-    async def __call__(
-            self,
-            handler: Callable,
-            event: Update,
-            data: Dict[str, Any]
-    ) -> Any:
+    async def __call__(self, handler: Callable, event: Update, data: Dict[str, Any]) -> Any:
         redis_client = get_redis()
         if not redis_client:
             return await handler(event, data)
@@ -113,7 +109,9 @@ class RateLimitMiddleware(BaseMiddleware):
         if len(recent) >= self.long_limit:
             await redis_client.set(long_block_key, "1", ttl=self.long_block)
             logger.warning(f"User {user_id} long-blocked for {self.long_block}s")
-            await self._notify_user(event, f"⛔ Блокировка {self.long_block} сек (слишком много сообщений)")
+            await self._notify_user(
+                event, f"⛔ Блокировка {self.long_block} сек (слишком много сообщений)"
+            )
             await self._cleanup(event)
             return UNHANDLED
 
@@ -144,4 +142,3 @@ class RateLimitMiddleware(BaseMiddleware):
             await event.message.answer(text)
         elif event.callback_query:
             await event.callback_query.answer(text, show_alert=True)
-

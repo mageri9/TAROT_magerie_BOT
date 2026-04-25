@@ -4,16 +4,18 @@ from pathlib import Path
 root_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(root_dir))
 
-import pytest
 import asyncio
+from unittest.mock import MagicMock
+
+import pytest
 from aiogram import Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
+from mocked_aiogram import MockedBot, MockedSession
 
 from src.core.db import db
-from src.database.init import init_all_tables
 from src.core.router_manager import setup_routers
-from unittest.mock import MagicMock
-from mocked_aiogram import MockedBot, MockedSession
+from src.database.init import init_all_tables
+
 
 @pytest.fixture
 async def test_db():
@@ -26,12 +28,14 @@ async def test_db():
     await db.close()
     db.db_url = old_url
 
+
 @pytest.fixture
 def bot():
     """Мок-бот для тестирования хэндлеров"""
     bot = MockedBot()
     bot.session = MockedSession()
     return bot
+
 
 @pytest.fixture
 def dp(bot, test_db):
@@ -43,6 +47,7 @@ def dp(bot, test_db):
     dp.include_router(router)
     return dp
 
+
 @pytest.fixture
 def event_loop():
     """Фикстура для asyncio"""
@@ -50,8 +55,10 @@ def event_loop():
     yield loop
     loop.close()
 
+
 class MockRedisClient:
     """Мок Redis для тестов"""
+
     def __init__(self):
         self.data = {}
         self.failures = {}
@@ -74,16 +81,21 @@ class MockRedisClient:
     # Методы кэша
     def _get_oracle_cache_key(self, card_name: str, is_reversed: bool, context: str) -> str:
         import hashlib
+
         normalized = " ".join(context.lower().split()) if context else ""
         raw = f"{card_name}:{is_reversed}:{normalized}"
         hash_val = hashlib.md5(raw.encode()).hexdigest()[:12]
         return f"oracle:cache:{hash_val}"
 
-    async def cache_oracle_response(self, card_name: str, is_reversed: bool, context: str, response: str, ttl: int = None) -> None:
+    async def cache_oracle_response(
+        self, card_name: str, is_reversed: bool, context: str, response: str, ttl: int = None
+    ) -> None:
         key = self._get_oracle_cache_key(card_name, is_reversed, context)
         self.data[key] = response
 
-    async def get_cached_oracle_response(self, card_name: str, is_reversed: bool, context: str) -> str | None:
+    async def get_cached_oracle_response(
+        self, card_name: str, is_reversed: bool, context: str
+    ) -> str | None:
         key = self._get_oracle_cache_key(card_name, is_reversed, context)
         return self.data.get(key)
 

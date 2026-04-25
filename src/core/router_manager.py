@@ -1,11 +1,9 @@
 from aiogram import Router
 
-import handlers.user.message as user_message
-import handlers.user.callback as user_query
-import handlers.admin.message as admin_message
 import handlers.admin.callback as admin_query
-
-
+import handlers.admin.message as admin_message
+import handlers.user.callback as user_query
+import handlers.user.message as user_message
 
 
 def setup_routers():

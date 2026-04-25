@@ -1,5 +1,12 @@
 import pytest
-from src.crud.card_back import add_card_back, get_random_card_back, get_all_card_backs, delete_card_back
+
+from src.crud.card_back import (
+    add_card_back,
+    delete_card_back,
+    get_all_card_backs,
+    get_random_card_back,
+)
+
 
 @pytest.mark.asyncio
 async def test_add_card_back(test_db):
@@ -11,6 +18,7 @@ async def test_add_card_back(test_db):
     assert len(backs) == 1
     assert backs[0][1] == file_id
 
+
 @pytest.mark.asyncio
 async def test_get_random_card_back(test_db):
     """Получение случайной рубашки"""
@@ -19,6 +27,7 @@ async def test_get_random_card_back(test_db):
 
     result = await get_random_card_back()
     assert result in ["file_1", "file_2"]
+
 
 @pytest.mark.asyncio
 async def test_delete_card_back(test_db):

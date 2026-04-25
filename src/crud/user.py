@@ -1,22 +1,23 @@
-from core.db import db
 from datetime import datetime
+
+from core.db import db
+
 
 async def init_users_table():
     """Создать таблицу users"""
-    await db.execute('''
+    await db.execute("""
                     CREATE TABLE IF NOT EXISTS users (
                     user_id BIGINT PRIMARY KEY,
                     username TEXT,
                     created_at TEXT NOT NULL
                                                     )
-                    ''')
+                    """)
+
 
 async def get_user(user_id: int):
     """Получить пользователя по ID"""
-    return await db.fetchone(
-                            'SELECT * FROM users WHERE user_id = $1',
-                             (user_id,)
-                             )
+    return await db.fetchone("SELECT * FROM users WHERE user_id = $1", (user_id,))
+
 
 async def create_user(user_id: int, username: str = None):
     """Создать нового пользователя"""
@@ -27,12 +28,16 @@ async def create_user(user_id: int, username: str = None):
         ON CONFLICT (user_id)
         DO UPDATE SET username = EXCLUDED.username
         """,
-            (user_id, username, datetime.now().isoformat())
+        (user_id, username, datetime.now().isoformat()),
     )
+
 
 async def update_username(user_id: int, user_name: str = None):
     """Обновить USERNAME"""
     return await db.execute(
-        'UPDATE users SET username = $1 WHERE user_id = $2',
-        (user_name, user_id,)
-                           )
+        "UPDATE users SET username = $1 WHERE user_id = $2",
+        (
+            user_name,
+            user_id,
+        ),
+    )

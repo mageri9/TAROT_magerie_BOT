@@ -1,13 +1,8 @@
 import asyncpg
 from loguru import logger
-from core.config import settings
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from tenacity import (
-    retry,
-    stop_after_attempt,
-    wait_exponential,
-    retry_if_exception_type
-)
+from core.config import settings
 
 
 class DBConnect:
@@ -28,36 +23,38 @@ class DBConnect:
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=0.1, min=0.1, max=2),
-        retry=retry_if_exception_type((
+        retry=retry_if_exception_type(
+            (
                 asyncpg.ConnectionFailureError,
                 asyncpg.TooManyConnectionsError,
                 asyncpg.DeadlockDetectedError,
                 ConnectionError,
                 TimeoutError,
                 OSError,
-        )),
-        reraise=True
+            )
+        ),
+        reraise=True,
     )
-
     async def execute(self, query: str, params: tuple = ()) -> tuple:
-        logger.warning(f"DB execute called")
+        logger.warning("DB execute called")
         async with self.pool.acquire() as conn:
             return await conn.execute(query, *params)
 
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=0.1, min=0.1, max=2),
-        retry=retry_if_exception_type((
+        retry=retry_if_exception_type(
+            (
                 asyncpg.ConnectionFailureError,
                 asyncpg.TooManyConnectionsError,
                 asyncpg.DeadlockDetectedError,
                 ConnectionError,
                 TimeoutError,
                 OSError,
-        )),
-        reraise=True
+            )
+        ),
+        reraise=True,
     )
-
     async def fetchall(self, query: str, params: tuple = ()) -> list:
         async with self.pool.acquire() as conn:
             return await conn.fetch(query, *params)
@@ -65,17 +62,18 @@ class DBConnect:
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=0.1, min=0.1, max=2),
-        retry=retry_if_exception_type((
+        retry=retry_if_exception_type(
+            (
                 asyncpg.ConnectionFailureError,
                 asyncpg.TooManyConnectionsError,
                 asyncpg.DeadlockDetectedError,
                 ConnectionError,
                 TimeoutError,
                 OSError,
-        )),
-        reraise=True
+            )
+        ),
+        reraise=True,
     )
-
     async def fetchone(self, query: str, params: tuple = ()) -> tuple:
         async with self.pool.acquire() as conn:
             return await conn.fetchrow(query, *params)

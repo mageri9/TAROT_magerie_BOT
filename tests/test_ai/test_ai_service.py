@@ -1,18 +1,19 @@
-import pytest
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
+
 from services.ai_service import ask_oracle
 
-
 # ========== ТЕСТЫ ==========
+
 
 @pytest.mark.asyncio
 async def test_primary_model_success(mock_redis, mock_openai_success):
     """Тест 1: Основная модель отвечает успешно"""
     mock_create = AsyncMock(return_value=mock_openai_success)
 
-    with patch('services.ai_service.client.chat.completions.create', mock_create):
+    with patch("services.ai_service.client.chat.completions.create", mock_create):
         result = await ask_oracle(
             card_name="Маг",
             is_reversed=False,
@@ -24,7 +25,7 @@ async def test_primary_model_success(mock_redis, mock_openai_success):
         assert result == "✨ Тестовое предсказание ✨"
         mock_create.assert_awaited_once()
         call_args = mock_create.call_args[1]
-        assert call_args['model'] == "gemma-4-26b-a4b-it"
+        assert call_args["model"] == "gemma-4-26b-a4b-it"
 
 
 @pytest.mark.asyncio
@@ -36,19 +37,19 @@ async def test_fallback_on_timeout(mock_redis, mock_openai_success):
         mock_openai_success,
     ]
 
-    with patch('services.ai_service.client.chat.completions.create', mock_create):
+    with patch("services.ai_service.client.chat.completions.create", mock_create):
         result = await ask_oracle(
             card_name="Башня",
             is_reversed=True,
             context="Боюсь перемен",
             db_meaning="Башня — разрушение старого",
-            redis_client=mock_redis
+            redis_client=mock_redis,
         )
 
         assert result == "✨ Тестовое предсказание ✨"
         assert mock_create.await_count == 2
 
-        calls = [c[1]['model'] for c in mock_create.call_args_list]
+        calls = [c[1]["model"] for c in mock_create.call_args_list]
         assert calls[0] == "gemma-4-26b-a4b-it"
         assert calls[1] == "gemma-4-31b-it"
 
@@ -66,14 +67,14 @@ async def test_circuit_breaker_opens_after_threshold(mock_redis, mock_openai_suc
         mock_openai_success,
     ]
 
-    with patch('services.ai_service.client.chat.completions.create', mock_create):
+    with patch("services.ai_service.client.chat.completions.create", mock_create):
         for i in range(3):
             await ask_oracle(
                 card_name="Луна",
                 is_reversed=False,
                 context=f"Тест {i}",
                 db_meaning="Луна — иллюзии",
-                redis_client=mock_redis
+                redis_client=mock_redis,
             )
 
         # После 3 ошибок circuit должен быть открыт
@@ -85,10 +86,10 @@ async def test_circuit_breaker_opens_after_threshold(mock_redis, mock_openai_suc
             is_reversed=False,
             context="Тест после открытия",
             db_meaning="Солнце — радость",
-            redis_client=mock_redis
+            redis_client=mock_redis,
         )
 
-        calls = [c[1]['model'] for c in mock_create.call_args_list]
+        calls = [c[1]["model"] for c in mock_create.call_args_list]
         # В последних запросах не должно быть основной модели
         assert "gemma-4-26b-a4b-it" not in calls[-1:]
 
@@ -99,13 +100,13 @@ async def test_all_models_failed(mock_redis):
     mock_create = AsyncMock()
     mock_create.side_effect = Exception("API полностью лёг")
 
-    with patch('services.ai_service.client.chat.completions.create', mock_create):
+    with patch("services.ai_service.client.chat.completions.create", mock_create):
         result = await ask_oracle(
             card_name="Звезда",
             is_reversed=False,
             context="Нужна надежда",
             db_meaning="Звезда — надежда",
-            redis_client=mock_redis
+            redis_client=mock_redis,
         )
 
         assert "Оракул сегодня немногословен" in result
@@ -118,13 +119,13 @@ async def test_auth_error_breaks_chain(mock_redis):
     mock_create = AsyncMock()
     mock_create.side_effect = Exception("401 Unauthorized")
 
-    with patch('services.ai_service.client.chat.completions.create', mock_create):
+    with patch("services.ai_service.client.chat.completions.create", mock_create):
         result = await ask_oracle(
             card_name="Смерть",
             is_reversed=False,
             context="Страх",
             db_meaning="Смерть — трансформация",
-            redis_client=mock_redis
+            redis_client=mock_redis,
         )
         assert "Оракул сегодня немногословен" in result
         assert mock_create.await_count == 1
@@ -141,17 +142,17 @@ async def test_circuit_breaker_skips_disabled_models(mock_redis):
 
     mock_create = AsyncMock(return_value=mock_response)
 
-    with patch('services.ai_service.client.chat.completions.create', mock_create):
+    with patch("services.ai_service.client.chat.completions.create", mock_create):
         await ask_oracle(
             card_name="Мир",
             is_reversed=False,
             context="",
             db_meaning="Мир — завершение",
-            redis_client=mock_redis
+            redis_client=mock_redis,
         )
 
         call_args = mock_create.call_args[1]
-        assert call_args['model'] == "gemma-4-31b-it"
+        assert call_args["model"] == "gemma-4-31b-it"
         mock_create.assert_awaited_once()
 
 
@@ -163,13 +164,13 @@ async def test_both_models_disabled(mock_redis):
 
     mock_create = AsyncMock()
 
-    with patch('services.ai_service.client.chat.completions.create', mock_create):
+    with patch("services.ai_service.client.chat.completions.create", mock_create):
         result = await ask_oracle(
             card_name="Влюблённые",
             is_reversed=False,
             context="",
             db_meaning="Влюблённые — выбор",
-            redis_client=mock_redis
+            redis_client=mock_redis,
         )
 
         assert "Звёзды просят немного терпения" in result
@@ -183,13 +184,13 @@ async def test_success_resets_circuit(mock_redis, mock_openai_success):
 
     mock_create = AsyncMock(return_value=mock_openai_success)
 
-    with patch('services.ai_service.client.chat.completions.create', mock_create):
+    with patch("services.ai_service.client.chat.completions.create", mock_create):
         await ask_oracle(
             card_name="Колесница",
             is_reversed=False,
             context="",
             db_meaning="Колесница — движение",
-            redis_client=mock_redis
+            redis_client=mock_redis,
         )
 
         assert mock_redis.failures.get("gemma-4-26b-a4b-it", 0) == 0

@@ -1,12 +1,9 @@
 import pytest
-
 from aiogram.dispatcher.event.bases import UNHANDLED
-
-from aiogram.methods import EditMessageMedia, AnswerCallbackQuery
-from aiogram.types import Update, CallbackQuery, User, Message
+from aiogram.methods import AnswerCallbackQuery, EditMessageMedia
+from aiogram.types import CallbackQuery, Message, Update, User
 
 from src.crud.tarot import save_tarot_card
-from tests.conftest import test_db
 from tests.handlers.test_user_handlers import make_message
 
 
@@ -17,8 +14,9 @@ def make_callback(user_id: int, data: str, message: Message = None) -> CallbackQ
         from_user=User(id=user_id, is_bot=False, first_name="Test"),
         chat_instance="test",
         data=data,
-        message=message
+        message=message,
     )
+
 
 @pytest.mark.asyncio
 async def test_open_card(dp, bot, test_db):
@@ -48,6 +46,7 @@ async def test_open_card(dp, bot, test_db):
     outgoing = bot.get_request()
     assert isinstance(outgoing, EditMessageMedia)
 
+
 @pytest.mark.asyncio
 async def test_reroll_card(dp, bot, test_db):
     """Тест реролла карты"""
@@ -68,10 +67,12 @@ async def test_reroll_card(dp, bot, test_db):
     outgoing = bot.get_request()
     assert isinstance(outgoing, EditMessageMedia)
 
+
 @pytest.mark.parametrize("is_reversed", [True, False])
 @pytest.mark.asyncio
 async def test_open_card_position(dp, bot, test_db, monkeypatch, is_reversed):
     """Параметризованный тест: прямая/перевёрнутая карта"""
+
     def fixed_random_choice(seq):
         return is_reversed
 
@@ -96,6 +97,3 @@ async def test_open_card_position(dp, bot, test_db, monkeypatch, is_reversed):
         assert "перевёрнутая" in outgoing.media.caption
     else:
         assert "перевёрнутая" not in outgoing.media.caption
-
-
-

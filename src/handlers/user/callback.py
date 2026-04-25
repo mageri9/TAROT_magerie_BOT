@@ -1,19 +1,17 @@
 import random
 
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, InputMediaPhoto, InlineKeyboardMarkup
-
+from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InputMediaPhoto
 from loguru import logger
-from core.redis import get_redis
-from keyboards.user import oracle_only_keyboard
 
+from core.redis import get_redis
+from crud import get_card_by_id, get_random_card, update_card_stats
+from keyboards.user import oracle_only_keyboard
 from services import ask_oracle
 
-from crud import get_card_by_id, get_random_card
-from crud import update_card_stats
-
 router = Router()
+
 
 @router.callback_query(F.data.startswith("open_card"))
 async def open_card(callback: CallbackQuery):
@@ -26,9 +24,15 @@ async def open_card(callback: CallbackQuery):
     if card_id is not None:
         card = await get_card_by_id(card_id)
         if card:
-            (_, card_name, card_file_id,
-             meaning_direct, meaning_reversed,
-             detailed_direct, detailed_reversed) = card
+            (
+                _,
+                card_name,
+                card_file_id,
+                meaning_direct,
+                meaning_reversed,
+                detailed_direct,
+                detailed_reversed,
+            ) = card
 
             is_reversed = random.choice([True, False])
             await update_card_stats(user_id, is_reversed)
@@ -43,14 +47,16 @@ async def open_card(callback: CallbackQuery):
             caption = f"✨ {card_name}{position_text} ✨\n\n{meaning}"
 
             await callback.message.edit_media(
-                                            InputMediaPhoto(media=card_file_id, caption=caption,),
-                                            reply_markup=oracle_only_keyboard(card_id)
-                                             )
+                InputMediaPhoto(
+                    media=card_file_id,
+                    caption=caption,
+                ),
+                reply_markup=oracle_only_keyboard(card_id),
+            )
             await callback.answer(f"✨ {card_name}!")
             return
 
     await callback.answer("❌ Карта не найдена")
-
 
 
 # =====================================================================
@@ -58,6 +64,7 @@ async def open_card(callback: CallbackQuery):
 #    Хендлер сохранён для будущих релизов.
 #    Клавиатура переключена на oracle_only_keyboard в open_card.
 #    Чтобы вернуть: заменить клавиатуру обратно.
+
 
 @router.callback_query(F.data.startswith("reroll"))
 async def reroll_card(callback: CallbackQuery):
@@ -71,9 +78,7 @@ async def reroll_card(callback: CallbackQuery):
 
     full_card = await get_card_by_id(card_id)
     if full_card:
-        (_, _, _,
-         meaning_direct, meaning_reversed,
-         detailed_direct, detailed_reversed) = full_card
+        (_, _, _, meaning_direct, meaning_reversed, detailed_direct, detailed_reversed) = full_card
 
         is_reversed = random.choice([True, False])
 
@@ -87,18 +92,18 @@ async def reroll_card(callback: CallbackQuery):
             meaning = meaning_direct or "Толкование в разработке"
             position_text = "🃏"
 
-        caption = (f"✨ {card_name}{position_text} ✨\n\n"
-                   f"{meaning}\n\n"
-                   f"✨ Приходите завтра!")
+        caption = f"✨ {card_name}{position_text} ✨\n\n{meaning}\n\n✨ Приходите завтра!"
     else:
         caption = f"✨ {card_name} ✨\n\nТолкование в разработке.✨"
 
     await callback.message.edit_media(
         InputMediaPhoto(media=card_file_id, caption=caption),
-        reply_markup=oracle_only_keyboard(card_id)
+        reply_markup=oracle_only_keyboard(card_id),
     )
 
     await callback.answer(f" {card_name}!")
+
+
 # =====================================================================
 
 
@@ -141,14 +146,10 @@ async def ask_oracle_handler(callback: CallbackQuery, state: FSMContext):
         is_reversed=is_reversed,
         context=context,
         db_meaning=db_meaning,
-        redis_client=redis_client
+        redis_client=redis_client,
     )
 
-    await msg.edit_text(
-
-        f"🔮 Оракул говорит:\n\n"
-        f"{oracle_answer}"
-    )
+    await msg.edit_text(f"🔮 Оракул говорит:\n\n{oracle_answer}")
     current_markup = callback.message.reply_markup
     new_markup = None
     if current_markup:

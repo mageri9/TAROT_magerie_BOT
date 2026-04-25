@@ -1,10 +1,10 @@
 from crud import (
+    add_card_to_history,
     can_get_card,
-    save_card_requests,
     get_card_back,
     get_last_user_cards,
-    add_card_to_history,
-    get_random_card
+    get_random_card,
+    save_card_requests,
 )
 
 
@@ -31,4 +31,3 @@ async def give_daily_card(user_id: int):
 
     card_back = await get_card_back()
     return card_id, card_back
-

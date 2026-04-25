@@ -1,4 +1,5 @@
 from pathlib import Path
+
 from pydantic_settings import BaseSettings
 
 
@@ -8,7 +9,6 @@ def get_env_path() -> Path:
 
 
 class Settings(BaseSettings):
-
     BOT_TOKEN: str
     ADMIN_IDS: list[int]
     DATABASE_URL: str
@@ -51,5 +51,6 @@ class Settings(BaseSettings):
 
     def get_db_url(self) -> str:
         return self.DATABASE_URL
+
 
 settings = Settings()

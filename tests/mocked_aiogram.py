@@ -7,6 +7,7 @@ from aiogram.methods import TelegramMethod
 from aiogram.methods.base import Response, TelegramType
 from aiogram.types import UNSET_PARSE_MODE, ResponseParameters, User
 
+
 class MockedSession(BaseSession):
     def __init__(self):
         super().__init__()
@@ -25,10 +26,10 @@ class MockedSession(BaseSession):
         self.closed = True
 
     async def make_request(
-            self,
-            bot: Bot,
-            method: TelegramMethod[TelegramType],
-            timeout: Optional[int] = UNSET_PARSE_MODE,
+        self,
+        bot: Bot,
+        method: TelegramMethod[TelegramType],
+        timeout: Optional[int] = UNSET_PARSE_MODE,
     ) -> TelegramMethod[TelegramType]:
         self.closed = False
         self.requests.append(method)
@@ -37,7 +38,7 @@ class MockedSession(BaseSession):
             bot=bot,
             method=method,
             status_code=responce.error_code,
-            content=responce.model_dump_json()
+            content=responce.model_dump_json(),
         )
         return responce.result
 
@@ -51,15 +52,13 @@ class MockedSession(BaseSession):
     ) -> AsyncGenerator[bytes, None]:
         yield b""
 
+
 class MockedBot(Bot):
     if TYPE_CHECKING:
         session: MockedSession = MockedSession()
 
     def __init__(self, **kwargs):
-        super().__init__(
-            kwargs.pop("token", "42:TEST"),
-            session=MockedSession(), **kwargs
-        )
+        super().__init__(kwargs.pop("token", "42:TEST"), session=MockedSession(), **kwargs)
         self._me = User(
             id=self.id,
             is_bot=True,
@@ -69,14 +68,14 @@ class MockedBot(Bot):
         )
 
     def add_result_for(
-            self,
-            method: Type[TelegramMethod[TelegramType]],
-            ok: bool,
-            result: TelegramType = None,
-            description: Optional[str] = None,
-            error_code: int = 200,
-            migrate_to_chat_id: Optional[int] = None,
-            retry_after: Optional[int] = None,
+        self,
+        method: Type[TelegramMethod[TelegramType]],
+        ok: bool,
+        result: TelegramType = None,
+        description: Optional[str] = None,
+        error_code: int = 200,
+        migrate_to_chat_id: Optional[int] = None,
+        retry_after: Optional[int] = None,
     ) -> Response[TelegramType]:
         response = Response(
             ok=ok,

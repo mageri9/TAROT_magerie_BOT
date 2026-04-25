@@ -1,15 +1,17 @@
-from typing import Callable, Dict, Any, Awaitable
+from typing import Any, Awaitable, Callable, Dict
+
 from aiogram import BaseMiddleware
+from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
 from aiogram.types import Update
-from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
 from loguru import logger
+
 
 class ErrorHandlerMiddleware(BaseMiddleware):
     async def __call__(
-            self,
-            handler: Callable[[Update, Dict[str, Any]], Awaitable[Any]],
-            event: Update,
-            data: Dict[str, Any]
+        self,
+        handler: Callable[[Update, Dict[str, Any]], Awaitable[Any]],
+        event: Update,
+        data: Dict[str, Any],
     ) -> Any:
         try:
             return await handler(event, data)

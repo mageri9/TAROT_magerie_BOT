@@ -1,18 +1,17 @@
 import asyncio
 import hashlib
 
-from openai import AsyncOpenAI
 from loguru import logger
+from openai import AsyncOpenAI
 
 from core.config import settings
-
 
 client = AsyncOpenAI(
     base_url="https://api.aitunnel.ru/v1/",
     api_key=settings.AITUNNEL_API_KEY,
     default_headers={
         "HTTP-Referer": "https://t.me/tarot_magerie_test_bot",
-        "X-Title": "Tarot Magerie Bot"
+        "X-Title": "Tarot Magerie Bot",
     },
     max_retries=0,
     timeout=settings.AI_TIMEOUT,
@@ -21,12 +20,13 @@ client = AsyncOpenAI(
 
 # services/ai_service.py — модифицируем функцию ask_oracle
 
+
 async def ask_oracle(
-        card_name: str,
-        is_reversed: bool = False,
-        context: str = "",
-        db_meaning: str = "",
-        redis_client=None
+    card_name: str,
+    is_reversed: bool = False,
+    context: str = "",
+    db_meaning: str = "",
+    redis_client=None,
 ) -> str:
     """
     Спросить у AI-таролога о значении карты.
@@ -38,9 +38,7 @@ async def ask_oracle(
 
     # ========== Проверяем кэш ==========
     if redis_client and settings.AI_CACHE_ENABLED:
-        cached = await redis_client.get_cached_oracle_response(
-            card_name, is_reversed, context
-        )
+        cached = await redis_client.get_cached_oracle_response(card_name, is_reversed, context)
         if cached:
             return cached  # Мгновенный ответ
 
@@ -106,13 +104,13 @@ async def ask_oracle(
                 messages=[{"role": "user", "content": prompt}],
                 temperature=settings.AI_TEMPERATURE,
                 max_tokens=settings.AI_MAX_TOKENS,
-                timeout=settings.AI_TIMEOUT
+                timeout=settings.AI_TIMEOUT,
             )
 
             answer = response.choices[0].message.content
 
             # Логируем использование токенов
-            if hasattr(response, 'usage') and response.usage:
+            if hasattr(response, "usage") and response.usage:
                 logger.info(
                     f"📊 Tokens: prompt={response.usage.prompt_tokens}, "
                     f"completion={response.usage.completion_tokens}, "
@@ -149,7 +147,9 @@ async def ask_oracle(
         # ========== Записываем ошибку в Circuit Breaker ==========
         if redis_client:
             failures = await redis_client.record_failure(model)
-            logger.warning(f"📊 Model {model} failures: {failures}/{settings.AI_CIRCUIT_BREAKER_THRESHOLD}")
+            logger.warning(
+                f"📊 Model {model} failures: {failures}/{settings.AI_CIRCUIT_BREAKER_THRESHOLD}"
+            )
 
             if failures >= settings.AI_CIRCUIT_BREAKER_THRESHOLD:
                 await redis_client.open_circuit(model)
@@ -161,11 +161,10 @@ async def ask_oracle(
 
     # ========== Сохраняем в кэш (только успешные ответы от AI) ==========
     if redis_client and settings.AI_CACHE_ENABLED:
-        await redis_client.cache_oracle_response(
-            card_name, is_reversed, context, answer
-        )
+        await redis_client.cache_oracle_response(card_name, is_reversed, context, answer)
 
     return answer
+
 
 def _get_cache_key(card_name: str, is_reversed: bool, context: str) -> str:
     """Генерирует ключ для кэширования ответа AI."""

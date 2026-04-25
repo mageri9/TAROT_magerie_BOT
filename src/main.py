@@ -1,22 +1,19 @@
 import asyncio
 import sys
-
-from loguru import logger
 from os import environ
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from loguru import logger
 
-from core.sentry_init import init_sentry
-from filters.chat_type import ChatTypeFilter
-
-from core.router_manager import setup_routers
 from core.config import Settings
 from core.db import db
 from core.logger import setup_logging
 from core.redis import init_redis
-
+from core.router_manager import setup_routers
+from core.sentry_init import init_sentry
+from filters.chat_type import ChatTypeFilter
 from middlewares.error_handler import ErrorHandlerMiddleware
 from middlewares.logger import LoggerMiddleware
 from middlewares.rate_limit import RateLimitMiddleware
@@ -27,7 +24,7 @@ async def main():
     setup_logging()
     init_sentry()
 
-    environ['TZ'] = 'Europe/Moscow'
+    environ["TZ"] = "Europe/Moscow"
 
     logger.info("Starting bot")
 
@@ -52,7 +49,7 @@ async def main():
         bot_info=bot_info,
         db=db,
         fsm_timeout=300,
-        redis_client = redis_client
+        redis_client=redis_client,
     )
 
     dp.include_routers(router)
@@ -65,7 +62,7 @@ async def main():
     dp.message.filter(ChatTypeFilter(chat_type=["private"]))
 
     try:
-        logger.info(f'Bot {bot_info.full_name} started (@{bot_info.username}. ID: {bot_info.id})')
+        logger.info(f"Bot {bot_info.full_name} started (@{bot_info.username}. ID: {bot_info.id})")
         await dp.start_polling(bot)
     finally:
         await bot.session.close()
@@ -79,5 +76,5 @@ def cli():
         logger.error("Bot stopped!")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli()

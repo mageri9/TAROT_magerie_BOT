@@ -1,21 +1,26 @@
 import asyncio
-from aiogram import Router, F
-from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import CallbackQuery, FSInputFile
-
 import time
-import psutil
-
-from pathlib import Path
-from loguru import logger
 from datetime import date
+from pathlib import Path
+
+import psutil
+from aiogram import F, Router
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.types import CallbackQuery, FSInputFile
+from loguru import logger
 
 from core.config import settings
 from core.db import db
 from core.redis import get_redis
-
-from crud import get_total_users, get_new_users_today, get_all_card_backs, delete_card_back, reset_daily_card_limit, get_active_users_today
+from crud import (
+    delete_card_back,
+    get_active_users_today,
+    get_all_card_backs,
+    get_new_users_today,
+    get_total_users,
+    reset_daily_card_limit,
+)
 from filters.check_admin import IsAdmin
 from keyboards.admin import get_admin_keyboard, get_cancel_keyboard, get_delete_back_keyboard
 
@@ -23,12 +28,16 @@ router = Router()
 
 # ==================== FSM состояния ====================
 
+
 class AdminStates(StatesGroup):
     """Состояния для админ-действий"""
+
     waiting_for_photo = State()
     waiting_for_save_back = State()
 
+
 # ==================== Callback handlers ====================
+
 
 @router.callback_query(F.data == "admin:get_file_id", IsAdmin())
 async def get_photo_id_start(callback: CallbackQuery, state: FSMContext):
@@ -37,20 +46,21 @@ async def get_photo_id_start(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(
         "📸 Отправьте фото, чтобы получить его file_id\n\n"
         "После отправки фото вы получите его file_id",
-        reply_markup=get_cancel_keyboard()
+        reply_markup=get_cancel_keyboard(),
     )
     await callback.answer()
+
 
 @router.callback_query(F.data == "admin:save_card_back", IsAdmin())
 async def save_card_back_start(callback: CallbackQuery, state: FSMContext):
     """Начало сохранения рубашки"""
     await state.set_state(AdminStates.waiting_for_save_back)
     await callback.message.answer(
-        "🃏 Отправьте фото для новой рубашки карт\n\n"
-        "После отправки фото рубашка будет сохранена",
-        reply_markup=get_cancel_keyboard()
+        "🃏 Отправьте фото для новой рубашки карт\n\nПосле отправки фото рубашка будет сохранена",
+        reply_markup=get_cancel_keyboard(),
     )
     await callback.answer()
+
 
 @router.callback_query(F.data == "admin:view_card_back", IsAdmin())
 async def view_card_backs(callback: CallbackQuery):
@@ -66,9 +76,10 @@ async def view_card_backs(callback: CallbackQuery):
         await callback.message.answer_photo(
             back[1],
             caption=f"🃏 Рубашка ID: {back[0]}",
-            reply_markup=get_delete_back_keyboard(back[0])
+            reply_markup=get_delete_back_keyboard(back[0]),
         )
     await callback.answer()
+
 
 @router.callback_query(F.data.startswith("admin:del_back:"), IsAdmin())
 async def del_back(callback: CallbackQuery):
@@ -78,26 +89,23 @@ async def del_back(callback: CallbackQuery):
     await callback.message.edit_caption(caption="✅ Рубашка удалена")
     await callback.answer()
 
+
 @router.callback_query(F.data == "admin:cancel", IsAdmin())
 async def cancel_action(callback: CallbackQuery, state: FSMContext):
     """Отмена текущего действия"""
     await state.clear()
-    await callback.message.edit_text(
-        "❌ Действие отменено",
-        reply_markup=get_admin_keyboard()
-    )
+    await callback.message.edit_text("❌ Действие отменено", reply_markup=get_admin_keyboard())
     await callback.answer()
+
 
 @router.callback_query(F.data == "admin:exit", IsAdmin())
 async def exit_admin_panel(callback: CallbackQuery, state: FSMContext):
     """Выход из админ-панели"""
     await state.clear()
     await callback.message.delete()
-    await callback.message.answer(
-        "👋 Вы вышли из админ-панели\n"
-        "Для входа используйте /admin"
-    )
+    await callback.message.answer("👋 Вы вышли из админ-панели\nДля входа используйте /admin")
     await callback.answer()
+
 
 @router.callback_query(F.data == "admin:backup", IsAdmin())
 async def admin_backup(callback: CallbackQuery):
@@ -148,7 +156,7 @@ async def admin_backup(callback: CallbackQuery):
 
         await callback.message.answer_document(
             FSInputFile(backup_file),
-            caption=f"✅ Бэкап готов\n📦 Размер: {backup_file.stat().st_size // 1024} КБ"
+            caption=f"✅ Бэкап готов\n📦 Размер: {backup_file.stat().st_size // 1024} КБ",
         )
 
         await msg.delete()
@@ -161,6 +169,7 @@ async def admin_backup(callback: CallbackQuery):
     finally:
         backup_file.unlink(missing_ok=True)
         await redis.delete(lock_key)
+
 
 @router.callback_query(F.data == "admin:errors", IsAdmin())
 async def admin_errors(callback: CallbackQuery):
@@ -212,13 +221,13 @@ async def admin_status(callback: CallbackQuery):
     try:
         redis_ping = await redis.ping()
         redis_status = "✅" if redis_ping else "❌"
-    except:
+    except Exception:
         redis_status = "❌"
 
     try:
         await db.fetchone("SELECT 1")
         db_status = "✅"
-    except:
+    except Exception:
         db_status = "❌"
 
     text = f"""
@@ -238,11 +247,13 @@ async def admin_status(callback: CallbackQuery):
 """
     await callback.message.answer(text)
 
+
 @router.callback_query(F.data == "admin:reset_daily_card", IsAdmin())
 async def reset_daily_card(callback: CallbackQuery):
     """Сбросить лимит карты дня для админа."""
     await reset_daily_card_limit(callback.from_user.id)
     await callback.answer("✅ Лимит сброшен")
+
 
 @router.callback_query(F.data == "admin:clear_ai_cache", IsAdmin())
 async def clear_ai_cache(callback: CallbackQuery):
@@ -254,6 +265,7 @@ async def clear_ai_cache(callback: CallbackQuery):
     deleted = await redis_client.invalidate_oracle_cache()
     await callback.message.answer(f"✅ Кэш очищен. Удалено: {deleted}")
     await callback.answer()
+
 
 def register_handlers():
     """Регистрируем обработчики колбэков админа"""

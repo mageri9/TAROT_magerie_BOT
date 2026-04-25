@@ -1,5 +1,7 @@
-import pytest
 from unittest.mock import AsyncMock, patch
+
+import pytest
+
 from services.ai_service import ask_oracle
 
 
@@ -8,17 +10,19 @@ async def test_cache_hit_returns_cached_response(mock_redis, mock_openai_success
     """Тест 1: Ответ берётся из кэша, AI не вызывается"""
 
     # Предварительно кладём ответ в кэш
-    await mock_redis.cache_oracle_response("Маг", False, "Хочу работу", "✨ Предсказание из кэша ✨")
+    await mock_redis.cache_oracle_response(
+        "Маг", False, "Хочу работу", "✨ Предсказание из кэша ✨"
+    )
 
     mock_create = AsyncMock()
 
-    with patch('services.ai_service.client.chat.completions.create', mock_create):
+    with patch("services.ai_service.client.chat.completions.create", mock_create):
         result = await ask_oracle(
             card_name="Маг",
             is_reversed=False,
             context="Хочу работу",
             db_meaning="Маг — мастерство",
-            redis_client=mock_redis
+            redis_client=mock_redis,
         )
 
     assert result == "✨ Предсказание из кэша ✨"
@@ -31,13 +35,13 @@ async def test_cache_miss_calls_ai_and_caches(mock_redis, mock_openai_success):
 
     mock_create = AsyncMock(return_value=mock_openai_success)
 
-    with patch('services.ai_service.client.chat.completions.create', mock_create):
+    with patch("services.ai_service.client.chat.completions.create", mock_create):
         result = await ask_oracle(
             card_name="Маг",
             is_reversed=False,
             context="Новый контекст",
             db_meaning="Маг — мастерство",
-            redis_client=mock_redis
+            redis_client=mock_redis,
         )
 
     assert result == "✨ Тестовое предсказание ✨"
@@ -56,16 +60,16 @@ async def test_cache_disabled_bypasses_cache(mock_redis, mock_openai_success):
     await mock_redis.cache_oracle_response("Маг", False, "Тест", "Из кэша")
 
     # Отключаем кэш в настройках
-    with patch('services.ai_service.settings.AI_CACHE_ENABLED', False):
+    with patch("services.ai_service.settings.AI_CACHE_ENABLED", False):
         mock_create = AsyncMock(return_value=mock_openai_success)
 
-        with patch('services.ai_service.client.chat.completions.create', mock_create):
+        with patch("services.ai_service.client.chat.completions.create", mock_create):
             result = await ask_oracle(
                 card_name="Маг",
                 is_reversed=False,
                 context="Тест",
                 db_meaning="Маг",
-                redis_client=mock_redis
+                redis_client=mock_redis,
             )
 
     assert result == "✨ Тестовое предсказание ✨"
@@ -78,13 +82,13 @@ async def test_failed_response_not_cached(mock_redis):
 
     mock_create = AsyncMock(side_effect=Exception("API упал"))
 
-    with patch('services.ai_service.client.chat.completions.create', mock_create):
+    with patch("services.ai_service.client.chat.completions.create", mock_create):
         result = await ask_oracle(
             card_name="Маг",
             is_reversed=False,
             context="Тест",
             db_meaning="Маг",
-            redis_client=mock_redis
+            redis_client=mock_redis,
         )
 
     assert "Оракул сегодня немногословен" in result
@@ -100,7 +104,7 @@ async def test_different_contexts_have_different_cache_keys(mock_redis, mock_ope
 
     mock_create = AsyncMock(return_value=mock_openai_success)
 
-    with patch('services.ai_service.client.chat.completions.create', mock_create):
+    with patch("services.ai_service.client.chat.completions.create", mock_create):
         # Первый запрос
         await ask_oracle("Маг", False, "Контекст 1", "Маг", mock_redis)
         # Второй запрос с другим контекстом

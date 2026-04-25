@@ -1,11 +1,8 @@
 import pytest
 from aiogram.fsm.context import FSMContext
-
-
-
-from test_admin_handlers import make_callback, make_photo_message, make_message
-from aiogram.methods import SendMessage, AnswerCallbackQuery
+from aiogram.methods import AnswerCallbackQuery, SendMessage
 from aiogram.types import Update
+from test_admin_handlers import make_callback, make_message, make_photo_message
 
 from src.handlers.admin.callback import AdminStates
 
@@ -14,6 +11,7 @@ from src.handlers.admin.callback import AdminStates
 async def test_admin_save_card_back_start(dp, bot, test_db, monkeypatch):
     """Тест начала сохранения рубашки — переход в состояние waiting_for_save_back"""
     from src.core.config import settings
+
     settings.ADMIN_IDS = [123]
 
     # Мокаем ответы Telegram
@@ -37,8 +35,8 @@ async def test_admin_save_card_back_start(dp, bot, test_db, monkeypatch):
 async def test_admin_handle_photo_for_save_back(dp, bot, test_db, monkeypatch):
     """Тест сохранения рубашки — отправка фото"""
     from src.core.config import settings
-    settings.ADMIN_IDS = [123]
 
+    settings.ADMIN_IDS = [123]
 
     # Устанавливаем состояние вручную
     fsm_context: FSMContext = dp.fsm.get_context(bot, user_id=123, chat_id=123)

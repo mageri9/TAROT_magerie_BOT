@@ -1,6 +1,8 @@
 import sentry_sdk
 from sentry_sdk.integrations.loguru import LoguruIntegration
+
 from core.config import settings
+
 
 def init_sentry():
     """Инициализация Sentry для мониторинга ошибок."""
@@ -15,4 +17,5 @@ def init_sentry():
     )
 
     from loguru import logger
+
     logger.info(f"✅ Sentry initialized ({settings.SENTRY_ENVIRONMENT})")

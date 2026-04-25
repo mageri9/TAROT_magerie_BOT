@@ -1,13 +1,11 @@
-import pytest
 from datetime import datetime
 
+import pytest
 from aiogram import types
 from aiogram.dispatcher.event.bases import UNHANDLED
 from aiogram.enums import ChatType
 from aiogram.methods import SendMessage
-from aiogram.types import Update, Message, Chat, User, CallbackQuery
-
-
+from aiogram.types import CallbackQuery, Chat, Message, Update, User
 
 
 def make_message(user_id: int, text: str, message: Message = None):
@@ -17,8 +15,9 @@ def make_message(user_id: int, text: str, message: Message = None):
         from_user=User(id=user_id, is_bot=False, first_name="Test"),
         date=datetime.now(),
         text=text,
-        message = message
+        message=message,
     )
+
 
 def make_photo_message(user_id: int, file_id: str) -> Message:
     """Сообщение с фото"""
@@ -30,19 +29,22 @@ def make_photo_message(user_id: int, file_id: str) -> Message:
         photo=[types.PhotoSize(file_id=file_id, file_unique_id=file_id, width=100, height=100)],
     )
 
+
 def make_callback(user_id: int, data: str, message: Message = None) -> CallbackQuery:
     return CallbackQuery(
         id="111",
         from_user=User(id=user_id, is_bot=False, first_name="Test"),
         chat_instance="test",
         data=data,
-        message=message
+        message=message,
     )
+
 
 @pytest.mark.asyncio
 async def test_admin_command(dp, bot, test_db, monkeypatch):
     """Тест /admin для админа"""
     from src.core.config import settings
+
     settings.ADMIN_IDS = [123]
 
     bot.add_result_for(SendMessage, ok=True)
@@ -56,11 +58,11 @@ async def test_admin_command(dp, bot, test_db, monkeypatch):
     assert "admin menu" in outgoing.text.lower()
 
 
-
 @pytest.mark.asyncio
 async def test_admin_commands_not_admin(dp, bot, test_db, monkeypatch):
     """Тест /admin для не-админа"""
     from src.core.config import settings
+
     settings.ADMIN_IDS = [999]
 
     bot.add_result_for(SendMessage, ok=True)
@@ -68,6 +70,3 @@ async def test_admin_commands_not_admin(dp, bot, test_db, monkeypatch):
     update = Update(update_id=1, message=make_message(123, "/admin"))
     result = await dp.feed_update(bot, update)
     assert result is UNHANDLED
-
-
-
