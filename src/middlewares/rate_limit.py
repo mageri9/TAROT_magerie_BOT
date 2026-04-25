@@ -1,4 +1,4 @@
-import time
+import asyncio
 from typing import Callable, Dict, Any
 from aiogram import BaseMiddleware
 from aiogram.types import Update
@@ -6,7 +6,7 @@ from aiogram.dispatcher.event.bases import UNHANDLED
 from loguru import logger
 
 from core.redis import get_redis
-from keyboards.user import card_of_the_day
+
 
 
 class RateLimitMiddleware(BaseMiddleware):
@@ -67,7 +67,7 @@ class RateLimitMiddleware(BaseMiddleware):
         if not user_id:
             return await handler(event, data)
 
-        now = time.time()
+        now = asyncio.get_event_loop().time()
 
         # === 1. Короткая блокировка (спам кнопками/командами) ===
         last_key = f"rate:last:{user_id}"
