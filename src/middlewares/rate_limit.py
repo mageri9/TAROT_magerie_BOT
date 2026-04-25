@@ -6,6 +6,7 @@ from aiogram.dispatcher.event.bases import UNHANDLED
 from aiogram.types import Update
 from loguru import logger
 
+from core.config import settings
 from core.redis import get_redis
 
 
@@ -39,12 +40,12 @@ class RateLimitMiddleware(BaseMiddleware):
 
     def __init__(
         self,
-        short_interval: float = 1.0,
-        short_max_violations: int = 3,
-        short_block: int = 30,
-        long_limit: int = 10,
-        long_window: int = 60,
-        long_block: int = 300,
+        short_interval: float = settings.RATE_LIMIT_SHORT_INTERVAL,
+        short_max_violations: int = settings.RATE_LIMIT_SHORT_MAX_VIOLATIONS,
+        short_block: int = settings.RATE_LIMIT_SHORT_BLOCK,
+        long_limit: int = settings.RATE_LIMIT_LONG_LIMIT,
+        long_window: int = settings.RATE_LIMIT_LONG_WINDOW,
+        long_block: int = settings.RATE_LIMIT_LONG_BLOCK,
     ):
         super().__init__()
         self.short_interval = short_interval

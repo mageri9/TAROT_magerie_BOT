@@ -8,6 +8,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
 
 import services as srv
+from core.config import settings
 from core.redis import get_redis
 from crud import get_user_stats
 from keyboards.user import card_of_the_day, open_card_button
@@ -108,14 +109,14 @@ async def process_context(message: types.Message, state: FSMContext):
         await message.answer("✨ Напиши мысль или вопрос, который тебя волнует.")
         return
 
-    if len(context) > 200:
+    if len(context) > settings.CONTEXT_MAX_LENGTH:
         last_space = context.rfind(" ", 0, 200)
         if last_space > 0:
             context = context[:last_space] + "..."
         else:
             context = context[:200] + "..."
 
-    await redis_client.set(f"context:{user_id}", context, ttl=600)
+    await redis_client.set(f"context:{user_id}", context, ttl=settings.CONTEXT_TTL)
 
     try:
         await message.delete()

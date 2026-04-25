@@ -33,6 +33,18 @@ class Settings(BaseSettings):
     SENTRY_ENVIRONMENT: str = "development"
     SENTRY_TRACES_SAMPLE_RATE: float = 0.3
 
+    # ========== КОНТЕКСТ ПОЛЬЗОВАТЕЛЯ ==========
+    CONTEXT_MAX_LENGTH: int = 200
+    CONTEXT_TTL: int = 600  # 10 минут
+
+    # ========== RATE LIMITER ==========
+    RATE_LIMIT_SHORT_INTERVAL: float = 1.0
+    RATE_LIMIT_SHORT_MAX_VIOLATIONS: int = 3
+    RATE_LIMIT_SHORT_BLOCK: int = 30
+    RATE_LIMIT_LONG_LIMIT: int = 10
+    RATE_LIMIT_LONG_WINDOW: int = 60
+    RATE_LIMIT_LONG_BLOCK: int = 300
+
     @property
     def pg_dump_cmd(self) -> str:
         """Собрать команду pg_dump из DATABASE_URL."""
