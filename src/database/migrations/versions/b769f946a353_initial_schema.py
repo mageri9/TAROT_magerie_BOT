@@ -73,10 +73,8 @@ def upgrade() -> None:
                    id SERIAL PRIMARY KEY,
                    user_id BIGINT NOT NULL,
                    card_id INTEGER NOT NULL,
-                   opened_at TIMESTAMP DEFAULT NOW
-               (
-               )
-                   )
+                   opened_at TIMESTAMP DEFAULT NOW()
+                )
                """)
 
     op.execute("""

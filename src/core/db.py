@@ -36,7 +36,7 @@ class DBConnect:
         reraise=True,
     )
     async def execute(self, query: str, params: tuple = ()) -> tuple:
-        logger.warning("DB execute called")
+        logger.debug("DB execute called")
         async with self.pool.acquire() as conn:
             return await conn.execute(query, *params)
 
