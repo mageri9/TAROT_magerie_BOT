@@ -24,7 +24,7 @@ async def create_user(user_id: int, username: str = None):
     return await db.execute(
         """
         INSERT INTO users (user_id, username, created_at)
-        VALUES ($1, $2, $3)'
+        VALUES ($1, $2, $3)
         ON CONFLICT (user_id)
         DO UPDATE SET username = EXCLUDED.username
         """,
