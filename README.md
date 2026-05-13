@@ -26,6 +26,7 @@
 - 📈 Sentry — отслеживание ошибок в реальном времени
 ---
 
+```mermaid
 graph TD
   User((Пользователь)) <--> Bot[Aiogram 3.x Bot]
   
@@ -48,8 +49,8 @@ graph TD
   end
 
   CB -- API OK --> AI[Gemma 4 / AITunnel]
-  CB -- API Down --> FB[Fallback Response]   
-
+  CB -- API Down --> FB[Fallback Response] 
+```
 ## 🏗️ Стек и архитектура
 
 | Компонент | Технология |
