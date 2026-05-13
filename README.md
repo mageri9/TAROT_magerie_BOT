@@ -26,6 +26,30 @@
 - 📈 Sentry — отслеживание ошибок в реальном времени
 ---
 
+graph TD
+  User((Пользователь)) <--> Bot[Aiogram 3.x Bot]
+  
+  subgraph Middlewares
+    Bot --> RL[Rate Limiter / Redis]
+    Bot --> SE[Sentry / Logger]
+  end
+
+  Bot --> Handlers[Handlers / Routers]
+  
+  subgraph Service Layer
+    Handlers --> Service[Бизнес-логика / Tarot Service]
+    Service --> Oracle[AI Oracle Service]
+  end
+
+  subgraph Infrastructure
+    Service --> DB[(PostgreSQL / Alchemy)]
+    Oracle --> Cache[Redis Caching]
+    Oracle --> CB{Circuit Breaker}
+  end
+
+  CB -- API OK --> AI[Gemma 4 / AITunnel]
+  CB -- API Down --> FB[Fallback Response]   
+
 ## 🏗️ Стек и архитектура
 
 | Компонент | Технология |
