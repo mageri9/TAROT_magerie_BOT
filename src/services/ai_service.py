@@ -35,6 +35,9 @@ async def ask_oracle(
     - При промахе идёт в AI через Circuit Breaker + Fallback
     - Сохраняет успешный ответ в кэш
     """
+    # САНИРУЕМ ВХОДНЫЕ ДАННЫЕ ОТ None:
+    context = context or ""
+    db_meaning = db_meaning or ""
 
     # ========== Проверяем кэш ==========
     if redis_client and settings.AI_CACHE_ENABLED:
