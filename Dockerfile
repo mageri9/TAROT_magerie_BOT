@@ -16,9 +16,11 @@ ENV PYTHONPATH=/app/src
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем код
+# Копируем код, скрипты, папки миграций и конфигурацию Alembic
 COPY src/ ./src/
 COPY scripts/ ./scripts/
+COPY alembic/ ./alembic/
+COPY alembic.ini .
 
 # Команда запуска
 CMD ["python", "src/main.py"]
