@@ -1,29 +1,28 @@
 services:
   bot:
-    build: .
+    image: ghcr.io/mageri9/tarot_magerie_bot:latest
+    container_name: tarot_bot
+    restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://bot_user:bot_pass@postgres:5432/tarot_bot
-      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: postgresql://bot_user:bot_pass@tarot_bot_postgres:5432/tarot_bot
+      REDIS_URL: redis://tarot_bot_redis:6379/0
       TZ: Europe/Moscow
     env_file:
       - .env
     command: sh -c "alembic upgrade head && python -m src.main"
-    restart: unless-stopped
     volumes:
-      - ./src:/app/src
       - ./logs:/app/logs
-      - ./alembic.ini:/app/alembic.ini
-      - /etc/localtime:/etc/localtime:ro
-      - ./scripts/tarot-images.json:/app/scripts/tarot-images.json
-      - ./scripts/tarot_images:/app/scripts/tarot_images
+    networks:
+      - tarot_bot_net
 
   postgres:
     image: postgres:15
+    container_name: tarot_bot_postgres
     environment:
       POSTGRES_DB: tarot_bot
       POSTGRES_USER: bot_user
@@ -34,14 +33,15 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-    ports:
-      - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - tarot_bot_postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
+    networks:
+      - tarot_bot_net
 
   redis:
     image: redis:7-alpine
+    container_name: tarot_bot_redis
     command: redis-server --appendonly yes
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -50,9 +50,15 @@ services:
       retries: 5
       start_period: 10s
     volumes:
-      - redis_data:/data
+      - tarot_bot_redis_data:/data
     restart: unless-stopped
+    networks:
+      - tarot_bot_net
 
 volumes:
-  postgres_data:
-  redis_data:
+  tarot_bot_postgres_data:
+  tarot_bot_redis_data:
+
+networks:
+  tarot_bot_net:
+    driver: bridge
