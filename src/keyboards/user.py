@@ -16,7 +16,11 @@ def card_of_the_day():
 
 
 def open_card_actions_keyboard(card_id: int) -> InlineKeyboardMarkup:
-    """Клавиатура с кнопками Реролл и Оракул"""
+    """Клавиатура с кнопками Реролл и Оракул.
+    ВРЕМЕННО НЕ ИСПОЛЬЗУЕТСЯ (см. handlers/user/callback.py, релиз 1.5).
+    Хендлер reroll_card жив, но клавиатура сейчас не отдаётся пользователю —
+    open_card использует oracle_only_keyboard вместо этой.
+    """
     buttons = [
         [
             InlineKeyboardButton(
