@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 
@@ -16,15 +17,24 @@ from src.core.db import db
 from src.core.router_manager import setup_routers
 from src.database.init import init_all_tables
 
+TEST_DATABASE_URL = os.getenv(
+    "TEST_DATABASE_URL",
+    "postgres://postgres:postgres@localhost:5432/tarot_bot_test",
+)
+
 
 @pytest.fixture
 async def test_db():
-    """Временная БД в памяти для тестов"""
+    """Тестовая БД — отдельный Postgres, поднятый для тестов"""
     old_url = db.db_url
-    db.db_url = ":memory:"
+    db.db_url = TEST_DATABASE_URL
     await db.connect()
     await init_all_tables()
     yield db
+    await db.execute(
+        "TRUNCATE users, user_cards, card_back, tarot_cards, "
+        "user_card_history RESTART IDENTITY CASCADE"
+    )
     await db.close()
     db.db_url = old_url
 
