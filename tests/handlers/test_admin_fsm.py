@@ -10,7 +10,7 @@ from handlers.admin.callback import AdminStates
 @pytest.mark.asyncio
 async def test_admin_save_card_back_start(dp, bot, test_db, monkeypatch):
     """Тест начала сохранения рубашки — переход в состояние waiting_for_save_back"""
-    from src.core.config import settings
+    from core.config import settings
 
     settings.ADMIN_IDS = [123]
 
@@ -34,7 +34,7 @@ async def test_admin_save_card_back_start(dp, bot, test_db, monkeypatch):
 @pytest.mark.asyncio
 async def test_admin_handle_photo_for_save_back(dp, bot, test_db, monkeypatch):
     """Тест сохранения рубашки — отправка фото"""
-    from src.core.config import settings
+    from core.config import settings
 
     settings.ADMIN_IDS = [123]
 

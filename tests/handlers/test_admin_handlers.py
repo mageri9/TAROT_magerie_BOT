@@ -43,7 +43,7 @@ def make_callback(user_id: int, data: str, message: Message = None) -> CallbackQ
 @pytest.mark.asyncio
 async def test_admin_command(dp, bot, test_db, monkeypatch):
     """Тест /admin для админа"""
-    from src.core.config import settings
+    from core.config import settings
 
     settings.ADMIN_IDS = [123]
 
@@ -61,7 +61,7 @@ async def test_admin_command(dp, bot, test_db, monkeypatch):
 @pytest.mark.asyncio
 async def test_admin_commands_not_admin(dp, bot, test_db, monkeypatch):
     """Тест /admin для не-админа"""
-    from src.core.config import settings
+    from core.config import settings
 
     settings.ADMIN_IDS = [999]
 
