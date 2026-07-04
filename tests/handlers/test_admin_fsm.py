@@ -4,7 +4,7 @@ from aiogram.methods import AnswerCallbackQuery, SendMessage
 from aiogram.types import Update
 from test_admin_handlers import make_callback, make_message, make_photo_message
 
-from src.handlers.admin.callback import AdminStates
+from handlers.admin.callback import AdminStates
 
 
 @pytest.mark.asyncio

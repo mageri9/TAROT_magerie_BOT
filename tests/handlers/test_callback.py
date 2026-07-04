@@ -3,7 +3,7 @@ from aiogram.dispatcher.event.bases import UNHANDLED
 from aiogram.methods import AnswerCallbackQuery, EditMessageMedia
 from aiogram.types import CallbackQuery, Message, Update, User
 
-from src.crud.tarot import save_tarot_card
+from crud.tarot import save_tarot_card
 from tests.handlers.test_user_handlers import make_message
 
 

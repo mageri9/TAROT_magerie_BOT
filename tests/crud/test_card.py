@@ -2,7 +2,7 @@ from datetime import date, timedelta
 
 import pytest
 
-from src.crud.card import can_get_card, save_card_requests
+from crud.card import can_get_card, save_card_requests
 
 
 @pytest.mark.asyncio

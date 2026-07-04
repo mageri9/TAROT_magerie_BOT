@@ -6,8 +6,8 @@ from aiogram.enums import ChatType
 from aiogram.methods import SendMessage, SendPhoto
 from aiogram.types import Chat, Message, Update, User
 
-from src.crud.card_back import add_card_back
-from src.crud.tarot import save_tarot_card
+from crud.card_back import add_card_back
+from crud.tarot import save_tarot_card
 
 
 def make_message(user_id: int, text: str) -> Message:

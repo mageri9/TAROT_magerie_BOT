@@ -1,6 +1,6 @@
 import pytest
 
-from src.crud.card_back import (
+from crud.card_back import (
     add_card_back,
     delete_card_back,
     get_all_card_backs,

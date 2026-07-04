@@ -1,6 +1,6 @@
 import pytest
 
-from src.crud.user import create_user, get_user, update_username
+from crud.user import create_user, get_user, update_username
 
 
 @pytest.mark.asyncio

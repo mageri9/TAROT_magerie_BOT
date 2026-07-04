@@ -1,8 +1,8 @@
 import pytest
 
-from src.crud.card_back import add_card_back
-from src.crud.tarot import save_tarot_card
-from src.services.card import give_daily_card
+from crud.card_back import add_card_back
+from crud.tarot import save_tarot_card
+from services.card import give_daily_card
 
 
 @pytest.mark.asyncio

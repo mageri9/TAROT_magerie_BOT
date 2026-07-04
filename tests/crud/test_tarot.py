@@ -1,13 +1,13 @@
 import pytest
 
-from src.crud.tarot import get_card_by_id, get_random_card, get_total_cards_count
+from crud.tarot import get_card_by_id, get_random_card, get_total_cards_count
 
 
 @pytest.mark.asyncio
 async def test_get_random_card(test_db):
     """Получение случайной карты"""
     # Добавим тестовую карту
-    from src.crud.tarot import save_tarot_card
+    from crud.tarot import save_tarot_card
 
     await save_tarot_card(0, "Test Card", "Major", "Major", "0", "test_file_id")
 

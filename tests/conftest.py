@@ -13,9 +13,9 @@ from aiogram import Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from mocked_aiogram import MockedBot, MockedSession
 
-from src.core.db import db
-from src.core.router_manager import setup_routers
-from src.database.init import init_all_tables
+from core.db import db
+from core.router_manager import setup_routers
+from database.init import init_all_tables
 
 TEST_DATABASE_URL = os.getenv(
     "TEST_DATABASE_URL",
