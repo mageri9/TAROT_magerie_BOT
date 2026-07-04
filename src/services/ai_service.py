@@ -2,7 +2,7 @@ import asyncio
 import hashlib
 
 from loguru import logger
-from openai import AsyncOpenAI
+from openai import APITimeoutError, AsyncOpenAI
 
 from core.config import settings
 
@@ -16,9 +16,6 @@ client = AsyncOpenAI(
     max_retries=0,
     timeout=settings.AI_TIMEOUT,
 )
-
-
-# services/ai_service.py — модифицируем функцию ask_oracle
 
 
 async def ask_oracle(
@@ -135,7 +132,7 @@ async def ask_oracle(
 
             break
 
-        except asyncio.TimeoutError:
+        except (asyncio.TimeoutError, APITimeoutError):
             last_error = f"timeout after {settings.AI_TIMEOUT}s"
             logger.warning(f"⏱️ Model {model} {last_error}")
 
