@@ -55,7 +55,7 @@ async def test_card_of_day_success(dp, bot, test_db, monkeypatch):
     assert isinstance(outgoing, SendPhoto)
 
     assert outgoing.photo == "test_card_back_id"
-    assert "Пока не открыли карту" in outgoing.caption
+    assert "Оракул увидит это" in outgoing.caption
 
 
 @pytest.mark.asyncio
