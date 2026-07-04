@@ -1,5 +1,4 @@
 import asyncio
-import hashlib
 
 from loguru import logger
 from openai import APITimeoutError, AsyncOpenAI
@@ -164,10 +163,3 @@ async def ask_oracle(
         await redis_client.cache_oracle_response(card_name, is_reversed, context, answer)
 
     return answer
-
-
-def _get_cache_key(card_name: str, is_reversed: bool, context: str) -> str:
-    """Генерирует ключ для кэширования ответа AI."""
-    data = f"{card_name},{is_reversed},{context}"
-    hash_val = hashlib.md5(data.encode()).hexdigest()[:12]
-    return f"oracle:cache:{hash_val}"
