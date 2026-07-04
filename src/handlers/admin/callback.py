@@ -128,13 +128,17 @@ async def admin_backup(callback: CallbackQuery):
 
     # ========== Асинхронный вызов pg_dump ==========
 
-    cmd = f"{settings.pg_dump_cmd} | gzip > /tmp/tarot_backup.sql.gz"
+    pg_password, pg_dump_cmd = settings.pg_dump_cmd
+    cmd = f"{pg_dump_cmd} | gzip > /tmp/tarot_backup.sql.gz"
 
     try:
+        import os
+
         process = await asyncio.create_subprocess_shell(
             cmd,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
+            env={**os.environ, "PGPASSWORD": pg_password},
         )
 
         stdout, stderr = await process.communicate()

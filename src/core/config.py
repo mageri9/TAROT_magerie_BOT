@@ -46,7 +46,7 @@ class Settings(BaseSettings):
     RATE_LIMIT_LONG_BLOCK: int = 300
 
     @property
-    def pg_dump_cmd(self) -> str:
+    def pg_dump_cmd(self) -> tuple[str, str]:
         """Собрать команду pg_dump из DATABASE_URL."""
         url = self.DATABASE_URL.replace("postgresql://", "")
         user_pass, host_port_db = url.split("@")
@@ -54,7 +54,7 @@ class Settings(BaseSettings):
         host_port, db = host_port_db.split("/")
         host = host_port.split(":")[0]
 
-        return f"PGPASSWORD={password} pg_dump -h {host} -U {user} -d {db}"
+        return password, f"pg_dump -h {host} -U {user} -d {db}"
 
     class Config:
         env_file = get_env_path()
