@@ -13,6 +13,9 @@ from services import ask_oracle
 router = Router()
 
 
+REVERSED_MARKER = " 🎴перевёрнутая "
+
+
 @router.callback_query(F.data.startswith("open_card"))
 async def open_card(callback: CallbackQuery):
     """Открыть карту по ID"""
@@ -39,7 +42,7 @@ async def open_card(callback: CallbackQuery):
 
             if is_reversed:
                 meaning = meaning_reversed
-                position_text = " 🎴перевёрнутая "
+                position_text = REVERSED_MARKER
             else:
                 meaning = meaning_direct
                 position_text = "🃏"
@@ -120,7 +123,7 @@ async def ask_oracle_handler(callback: CallbackQuery, state: FSMContext):
     card_name = card[1]
 
     caption = callback.message.caption or "🃏"
-    is_reversed = " 🎴перевёрнутая " in caption
+    is_reversed = REVERSED_MARKER in caption
     if is_reversed:
         db_meaning = card[5]  # meaning_reversed
     else:
