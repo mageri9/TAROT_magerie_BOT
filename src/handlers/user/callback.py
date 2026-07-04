@@ -33,8 +33,8 @@ async def open_card(callback: CallbackQuery):
                 card_file_id,
                 meaning_direct,
                 meaning_reversed,
-                detailed_direct,
-                detailed_reversed,
+                _detailed_direct,
+                _detailed_reversed,
             ) = card
 
             is_reversed = random.choice([True, False])
@@ -81,7 +81,9 @@ async def reroll_card(callback: CallbackQuery):
 
     full_card = await get_card_by_id(card_id)
     if full_card:
-        (_, _, _, meaning_direct, meaning_reversed, detailed_direct, detailed_reversed) = full_card
+        (_, _, _, meaning_direct, meaning_reversed, _detailed_direct, _detailed_reversed) = (
+            full_card
+        )
 
         is_reversed = random.choice([True, False])
 
