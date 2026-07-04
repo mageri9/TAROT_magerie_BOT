@@ -1,3 +1,5 @@
+from loguru import logger
+
 from crud import (
     add_card_to_history,
     can_get_card,
@@ -21,7 +23,7 @@ async def give_daily_card(user_id: int):
     if not card:
         card = await get_random_card(excluded_ids=None)
         if not card:
-            print("❌ Нет карт в колоде!")
+            logger.error("❌ Нет карт в колоде!")
             return None, None
 
     card_id, card_name, card_file_id = card
