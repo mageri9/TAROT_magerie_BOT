@@ -172,7 +172,7 @@ class RedisClient:
     async def open_circuit(self, model: str) -> None:
         """Разомкнуть circuit breaker (отключить модель)."""
         key = f"circuit:{model}:open"
-        await self._redis.set(key, "1", ttl=settings.AI_CIRCUIT_BREAKER_COOLDOWN)
+        await self._redis.set(key, "1", ex=settings.AI_CIRCUIT_BREAKER_COOLDOWN)
         logger.warning(
             f"🔴 Circuit BREAKER OPEN for {model} ({settings.AI_CIRCUIT_BREAKER_COOLDOWN}s)"
         )
