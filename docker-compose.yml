@@ -6,11 +6,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
+      # Удаляем локальный redis из depends_on
     environment:
       DATABASE_URL: postgresql://bot_user:bot_pass@tarot_bot_postgres:5432/tarot_bot
-      REDIS_URL: redis://tarot_bot_redis:6379/0
+      REDIS_URL: redis://nexus-redis:6379/2 # Указываем сетевое имя общего Redis и БД №2
       TZ: Europe/Moscow
     env_file:
       - .env
@@ -19,6 +18,7 @@ services:
       - ./logs:/app/logs
     networks:
       - tarot_bot_net
+      - nexus_shared # Подключаем к внешней сети
 
   postgres:
     image: postgres:15
@@ -39,26 +39,11 @@ services:
     networks:
       - tarot_bot_net
 
-  redis:
-    image: redis:7-alpine
-    container_name: tarot_bot_redis
-    command: redis-server --appendonly yes
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-      start_period: 10s
-    volumes:
-      - tarot_bot_redis_data:/data
-    restart: unless-stopped
-    networks:
-      - tarot_bot_net
-
 volumes:
   tarot_bot_postgres_data:
-  tarot_bot_redis_data:
 
 networks:
   tarot_bot_net:
     driver: bridge
+  nexus_shared:
+    external: true
