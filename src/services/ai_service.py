@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 from loguru import logger
 from openai import APITimeoutError, AsyncOpenAI
@@ -108,13 +109,42 @@ async def ask_oracle(
 
             answer = response.choices[0].message.content
 
-            # Логируем использование токенов
+            # Логируем использование токенов и готовим статистику
+            prompt_tokens = 0
+            completion_tokens = 0
+
             if hasattr(response, "usage") and response.usage:
+                prompt_tokens = response.usage.prompt_tokens or 0
+                completion_tokens = response.usage.completion_tokens or 0
                 logger.info(
-                    f"📊 Tokens: prompt={response.usage.prompt_tokens}, "
-                    f"completion={response.usage.completion_tokens}, "
+                    f"📊 Tokens: prompt={prompt_tokens}, "
+                    f"completion={completion_tokens}, "
                     f"total={response.usage.total_tokens}"
                 )
+
+            # Отправка телеметрии ИИ в управляющий центр Nexus
+            if redis_client:
+                try:
+                    event_data = {
+                        "event_type": "ai.request",
+                        "payload": {
+                            "project": "tarot_bot",  # Имя проекта в соответствии с манифестом Nexus
+                            "provider": "aitunnel",
+                            "model": model,
+                            "prompt_tokens": prompt_tokens,
+                            "completion_tokens": completion_tokens,
+                            "modality": "text",  # Таролог работает исключительно с текстовой модальностью
+                        },
+                    }
+                    await redis_client.publish(
+                        "nexus:pubsub:telemetry", json.dumps(event_data, ensure_ascii=False)
+                    )
+                    logger.info(
+                        f"[telemetry] Published ai.request for tarot_bot ({model}) -> "
+                        f"{prompt_tokens}p/{completion_tokens}c"
+                    )
+                except Exception as telemetry_err:
+                    logger.error(f"[telemetry] Failed to publish telemetry event: {telemetry_err}")
 
             if not answer:
                 raise ValueError("Empty response from model")

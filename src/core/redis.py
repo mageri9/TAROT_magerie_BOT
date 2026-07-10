@@ -123,6 +123,10 @@ class RedisClient:
         except Exception:
             return False
 
+    async def publish(self, channel: str, message: str) -> None:
+        """Опубликовать сообщение в канал Redis Pub/Sub."""
+        await self._redis.publish(channel, message)
+
     async def get_info(self) -> dict:
         """Получить информацию о сервере Redis."""
         info = await self._redis.info()

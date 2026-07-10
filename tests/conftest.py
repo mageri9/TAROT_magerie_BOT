@@ -81,6 +81,10 @@ class MockRedisClient:
         self.failures[model] = self.failures.get(model, 0) + 1
         return self.failures[model]
 
+    async def publish(self, channel: str, message: str) -> None:
+        """Mock-заглушка для тестов, предотвращающая падение при отправке телеметрии."""
+        pass
+
     async def open_circuit(self, model: str) -> None:
         self.circuits[model] = True
 
