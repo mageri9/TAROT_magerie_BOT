@@ -52,6 +52,31 @@ async def main():
         redis_client=redis_client,
     )
 
+    # --- ИНТЕГРАЦИЯ NEXUS SDK ---
+    nexus_sdk = None
+    nexus_secret = environ.get("NEXUS_APP_SECRET", "")
+    nexus_url = environ.get("NEXUS_ENDPOINT_URL", "http://nexus-webhook:8000/events/app")
+
+    if nexus_secret:
+        try:
+            from nexus_sdk import NexusSDK
+
+            nexus_sdk = NexusSDK(
+                endpoint_url=nexus_url, app_secret=nexus_secret, project_name="tarot_bot"
+            )
+            # 1. Регистрируем глобальный перехватчик исключений aiogram
+            nexus_sdk.register_aiogram_error_handler(dp)
+            # 2. Запускаем периодическую отправку пульса (Heartbeat) каждые 15 секунд
+            nexus_sdk.start_heartbeat(interval_seconds=15)
+            logger.info(
+                "📡 Nexus SDK Observability initialized successfully (Heartbeat & Error Handler)"
+            )
+        except Exception as e:
+            logger.error(f"Failed to initialize Nexus SDK: {e}")
+    else:
+        logger.warning("⚠️ NEXUS_APP_SECRET is not set in environment. Nexus SDK is disabled.")
+    # ----------------------------
+
     dp.include_routers(router)
 
     dp.update.middleware(SentryMiddleware())
@@ -65,6 +90,9 @@ async def main():
         logger.info(f"Bot {bot_info.full_name} started (@{bot_info.username}. ID: {bot_info.id})")
         await dp.start_polling(bot)
     finally:
+        # Грациозно останавливаем фоновые процессы SDK при выключении бота
+        if nexus_sdk:
+            await nexus_sdk.close()
         await bot.session.close()
         await db.close()
 
